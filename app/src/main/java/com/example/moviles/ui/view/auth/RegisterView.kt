@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.sp
 
 @Preview(showBackground = true)
 @Composable
-fun RegisterView() {
+fun RegisterView(
+    onNavigateToLogin: () -> Unit = {}
+) {
 
     var rut by remember { mutableStateOf("") }
     var fullName by remember { mutableStateOf("") }
@@ -155,7 +157,7 @@ fun RegisterView() {
             Spacer(modifier = Modifier.height(15.dp))
 
             TextButton (
-                onClick = { /* Navegar de vuelta a LoginView */ }
+                onClick = { onNavigateToLogin() }
             ) {
                 Text(text = "¿Ya tienes cuenta? Inicia sesión")
             }

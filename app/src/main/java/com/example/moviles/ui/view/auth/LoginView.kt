@@ -32,9 +32,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
+
 @Preview(showBackground = true)
 @Composable
-fun LoginView() {
+fun LoginView(
+    onNavigateToRegister: () -> Unit = {},
+    onNavigateToForgotPassword: () -> Unit = {}
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -64,6 +68,7 @@ fun LoginView() {
             OutlinedTextField(
                 value = email,
                 onValueChange = {email = it},
+                label = { Text("Correo") },
                 placeholder = {Text("ejemplo@correo.com")},
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -78,6 +83,7 @@ fun LoginView() {
             OutlinedTextField(
                 value = password,
                 onValueChange = {password = it},
+                label = {Text("Contraseña")},
                 placeholder = {Text("Contraseña")},
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -94,7 +100,7 @@ fun LoginView() {
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
-                onClick = { /* Navegación a RegisterView */},
+                onClick = {onNavigateToForgotPassword() },
                 modifier = Modifier.align(Alignment.End)
             ) {
                 Text(text = "¿Olvidaste tu contraseña?")
@@ -112,7 +118,7 @@ fun LoginView() {
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
-                onClick = { /* Navegación a RegisterView */}
+                onClick = { onNavigateToRegister()}
             ) {
                 Text(text = "¿No tienes cuenta? Regístrate")
             }

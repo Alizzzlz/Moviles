@@ -33,7 +33,10 @@ import androidx.compose.ui.unit.sp
 
 @Preview(showBackground = true)
 @Composable
-fun VerifyCodeView(){
+fun VerifyCodeView(
+    onNavigateToResetPassword: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {}
+){
     var code by remember { mutableStateOf("") }
 
     Box(
@@ -57,6 +60,16 @@ fun VerifyCodeView(){
                 textAlign = TextAlign.Center
             )
 
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Hemos enviado un código de verificación de 6 dígitos a tu destino registrado ",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
+
             Spacer(modifier = Modifier.height(28.dp))
 
             OutlinedTextField(
@@ -76,7 +89,7 @@ fun VerifyCodeView(){
             Spacer(modifier = Modifier.height(22.dp))
 
             Button(
-                onClick = {/* Lógica para validar token e ir a ResetPasswordView */},
+                onClick = {onNavigateToResetPassword()},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -90,7 +103,7 @@ fun VerifyCodeView(){
             Spacer(modifier = Modifier.height(12.dp))
 
             TextButton(
-                onClick = {/*lógica para reenviar*/}
+                onClick = {}
             ) {
                 Text(
                     text = "¿No recibiste el código? Reenviar código",
@@ -102,7 +115,7 @@ fun VerifyCodeView(){
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
-                onClick = {/*navegar a loginview*/}
+                onClick = {onNavigateToLogin()}
             ) {
                 Text(
                     text = "Volver al inicio de sesión",

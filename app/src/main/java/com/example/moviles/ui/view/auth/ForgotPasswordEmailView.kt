@@ -31,9 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-@Preview(showBackground = true)
+
 @Composable
-fun ForgotPasswordEmailView() {
+fun ForgotPasswordEmailView(
+    onNavigateToPhone: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
+    onSendCode: () -> Unit = {}
+) {
 
     var email by remember { mutableStateOf("") }
 
@@ -86,7 +90,7 @@ fun ForgotPasswordEmailView() {
             Spacer(modifier = Modifier.height(28.dp))
 
             Button (
-                onClick = { /* Lógica para enviar correo de recuperación */ },
+                onClick = { onSendCode() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -100,7 +104,7 @@ fun ForgotPasswordEmailView() {
             Spacer(modifier = Modifier.height(12.dp))
 
             TextButton(
-                onClick = { /* Navegar a ForgotPasswordPhoneView */ }
+                onClick = { onNavigateToPhone() }
             ) {
                 Text(
                     text = "Probar con número de teléfono",
@@ -112,7 +116,7 @@ fun ForgotPasswordEmailView() {
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
-                onClick = { /* Navegar de vuelta a LoginView */ }
+                onClick = { onNavigateToLogin() }
             ) {
                 Text(
                     text = "Volver al inicio de sesión",

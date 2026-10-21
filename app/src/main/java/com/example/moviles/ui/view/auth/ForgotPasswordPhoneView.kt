@@ -33,7 +33,11 @@ import androidx.compose.ui.unit.sp
 
 @Preview(showBackground = true)
 @Composable
-fun ForgotPasswordPhoneView() {
+fun ForgotPasswordPhoneView(
+    onNavigateToEmail: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
+    onSendCode: () -> Unit = {}
+) {
     var phone by remember { mutableStateOf("") }
 
     Box(
@@ -84,7 +88,7 @@ fun ForgotPasswordPhoneView() {
             Spacer(modifier = Modifier.height(28.dp))
 
             Button(
-                onClick = {/*Logica para enviar SMS e ir a VerifyCodeView*/},
+                onClick = {onSendCode},
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -98,7 +102,7 @@ fun ForgotPasswordPhoneView() {
             Spacer(modifier = Modifier.height(12.dp))
 
             TextButton (
-                onClick = { /* Navegar a ForgotPasswordView (Correo) */ }
+                onClick = { onNavigateToEmail()}
             ) {
                 Text(
                     text = "Probar con correo electrónico",
@@ -110,7 +114,7 @@ fun ForgotPasswordPhoneView() {
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
-                onClick = { /* Navegar a LoginView */ }
+                onClick = { onNavigateToLogin() }
             ) {
                 Text(
                     text = "Volver al inicio de sesión",
