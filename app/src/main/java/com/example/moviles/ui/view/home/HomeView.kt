@@ -3,6 +3,7 @@ package com.example.moviles.ui.view.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -46,29 +48,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moviles.ui.theme.Purple40
-import com.example.moviles.ui.theme.Purple80
-import com.example.moviles.ui.theme.PurpleGrey40
-import com.example.moviles.ui.theme.PurpleGrey80
+import com.example.moviles.ui.theme.MovilesTheme
+import com.example.moviles.ui.theme.PrimaryBlue
+import com.example.moviles.ui.theme.SuccessGreen
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-// Modelo de datos para un registro de asistencia
 data class Registro(
     val fecha: String,
     val tipo: String,
     val hora: String
 )
 
-// Modelo para cada item de la barra inferior
 data class NavItem(
     val titulo: String,
     val icono: ImageVector
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
 @Composable
 fun HomeView(nombre: String = "Juan Pérez") {
     var itemSeleccionado by remember { mutableIntStateOf(0) }
@@ -80,7 +78,7 @@ fun HomeView(nombre: String = "Juan Pérez") {
     )
 
     Scaffold(
-        containerColor = PurpleGrey40,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -91,13 +89,13 @@ fun HomeView(nombre: String = "Juan Pérez") {
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = PurpleGrey40
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },
         bottomBar = {
-            NavigationBar(containerColor = Color.White) {
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 navItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = itemSeleccionado == index,
@@ -105,11 +103,11 @@ fun HomeView(nombre: String = "Juan Pérez") {
                         icon = { Icon(item.icono, contentDescription = item.titulo) },
                         label = { Text(item.titulo) },
                         colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = Purple40,
-                            selectedTextColor = Purple40,
-                            indicatorColor = Purple80,
-                            unselectedIconColor = PurpleGrey40,
-                            unselectedTextColor = PurpleGrey40
+                            selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                            selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                            indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -145,8 +143,8 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .background(PurpleGrey40),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            .background(MaterialTheme.colorScheme.background),
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Saludo
@@ -155,30 +153,30 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                 Text(
                     text = "Bienvenido,",
                     fontSize = 18.sp,
-                    color = PurpleGrey80
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
                 )
                 Text(
                     text = nombre,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
         }
 
-        // Tarjeta de estado de hoy con botones
+        // Tarjeta principal blanca
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Text(
                         text = "Asistencia de hoy",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = PurpleGrey40
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
@@ -187,19 +185,19 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Entrada", color = PurpleGrey40, fontSize = 14.sp)
+                            Text("Entrada", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             Text(
                                 horaEntrada,
-                                color = Purple40,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Salida", color = PurpleGrey40, fontSize = 14.sp)
+                            Text("Salida", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             Text(
                                 horaSalida,
-                                color = Purple40,
+                                color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -216,7 +214,10 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                             },
                             enabled = !entradaRegistrada,
                             modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = Purple40)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PrimaryBlue,
+                                disabledContainerColor = PrimaryBlue.copy(alpha = 0.4f)
+                            )
                         ) {
                             Icon(Icons.Default.CheckCircle, contentDescription = null)
                             Spacer(modifier = Modifier.width(6.dp))
@@ -229,7 +230,11 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                             onClick = { horaSalida = horaActual() },
                             enabled = entradaRegistrada,
                             modifier = Modifier.weight(1f),
-                            colors = ButtonDefaults.buttonColors(containerColor = Purple40)
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFE0E0E0),
+                                contentColor = Color.Gray,
+                                disabledContainerColor = Color(0xFFECECEC)
+                            )
                         ) {
                             Icon(Icons.Default.ExitToApp, contentDescription = null)
                             Spacer(modifier = Modifier.width(6.dp))
@@ -257,7 +262,7 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                 text = "Registros recientes",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
@@ -266,7 +271,7 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = PurpleGrey80)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Row(
                     modifier = Modifier
@@ -278,22 +283,26 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                         imageVector = if (registro.tipo == "Entrada")
                             Icons.Default.CheckCircle else Icons.Default.ExitToApp,
                         contentDescription = registro.tipo,
-                        tint = Purple40
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text(
                             registro.tipo,
                             fontWeight = FontWeight.Bold,
-                            color = PurpleGrey40
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
-                        Text(registro.fecha, fontSize = 13.sp, color = PurpleGrey40)
+                        Text(
+                            registro.fecha,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                        )
                     }
                     Text(
                         registro.hora,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Purple40
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 }
             }
@@ -306,16 +315,20 @@ fun TarjetaResumen(titulo: String, valor: String, modifier: Modifier = Modifier)
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Purple80)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 valor,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
-                color = Purple40
+                color = MaterialTheme.colorScheme.onPrimaryContainer
             )
-            Text(titulo, fontSize = 14.sp, color = PurpleGrey40)
+            Text(
+                titulo,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+            )
         }
     }
 }
@@ -325,10 +338,18 @@ fun PantallaTemporal(texto: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(PurpleGrey40),
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(texto, color = Color.White, fontSize = 22.sp)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun HomeViewPreview() {
+    MovilesTheme {
+        HomeView()
     }
 }
