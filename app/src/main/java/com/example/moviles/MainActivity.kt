@@ -12,13 +12,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.rememberNavController
 import com.example.moviles.ui.navigation.AuthNavGraph
-import com.tu.paquete.ui.theme.TuAppTheme
+import com.example.moviles.ui.theme.MovilesTheme
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            TuAppTheme {
+            MovilesTheme() {
                 Surface (color = MaterialTheme.colorScheme.background) {
                     val navController = rememberNavController()
                     AuthNavGraph(navController = navController)
@@ -39,7 +40,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    TuAppTheme() {
+    MovilesTheme () {
         Greeting("Android")
     }
 }

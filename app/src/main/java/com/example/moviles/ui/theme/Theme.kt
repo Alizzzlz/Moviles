@@ -1,9 +1,8 @@
-package com.tu.paquete.ui.theme
+package com.example.moviles.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -11,41 +10,40 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.example.moviles.ui.theme.BackgroundLight
-import com.example.moviles.ui.theme.OnBackgroundDark
-import com.example.moviles.ui.theme.OnSurfaceVariant
-import com.example.moviles.ui.theme.PrimaryBlue
-import com.example.moviles.ui.theme.SecondaryAmber
-import com.example.moviles.ui.theme.SurfaceLight
-import com.example.moviles.ui.theme.Typography
 
-// ESQUEMA MODO CLARO
+//modo claro
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryBlue,
     onPrimary = Color.White,
+    primaryContainer = CardSoftPurpleBlue,    // Para tarjetas de resumen e historial
+    onPrimaryContainer = OnCardSoftText,       // Texto e íconos dentro de las tarjetas de resumen
     secondary = SecondaryAmber,
-    background = BackgroundLight,
-    onBackground = OnBackgroundDark,
+    onSecondary = Color.White,
+    background = PrimaryDarkBlue,             // Fondo oscuro de la vista completa
+    onBackground = Color.White,               // Texto blanco para "Bienvenido, Juan Pérez"
+    surface = SurfaceLight,                   // Tarjeta blanca principal y barras
+    onSurface = OnBackgroundDark,             // Texto oscuro en tarjetas blancas
+    onSurfaceVariant = OnSurfaceVariant
+)
+
+//modo oscuro
+private val DarkColorScheme = lightColorScheme(
+    primary = PrimaryBlue,
+    onPrimary = Color.White,
+    primaryContainer = CardSoftPurpleBlue,
+    onPrimaryContainer = OnCardSoftText,
+    secondary = SecondaryAmber,
+    background = PrimaryDarkBlue,
+    onBackground = Color.White,
     surface = SurfaceLight,
     onSurface = OnBackgroundDark,
     onSurfaceVariant = OnSurfaceVariant
 )
 
-// ESQUEMA MODO OSCURO (Opcional)
-private val DarkColorScheme = darkColorScheme(
-    primary = PrimaryBlue,
-    onPrimary = Color.White,
-    secondary = SecondaryAmber,
-    background = Color(0xFF121212),
-    onBackground = Color.White,
-    surface = Color(0xFF1E1E1E),
-    onSurface = Color.White
-)
-
 @Composable
-fun TuAppTheme( // Nombre del tema de tu app
+fun MovilesTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false, // Ponlo en 'false' si prefieres forzar tu paleta corporativa
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
