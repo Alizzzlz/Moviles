@@ -28,8 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 
 
-val Purple40 = Color(0xFF6650a4)
 
+val PrimaryDarkBlue = Color(0xFF493261)
 
 @Preview(showBackground = true)
 @Composable
@@ -49,7 +49,7 @@ fun SplashView(){
     }
 
     Box(
-        modifier = Modifier.fillMaxSize().background(Purple40),
+        modifier = Modifier.fillMaxSize().background(PrimaryDarkBlue ),
         contentAlignment = Alignment.Center
     ){
         Column(

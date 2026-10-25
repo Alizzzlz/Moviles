@@ -252,7 +252,7 @@ fun HomeContent(nombre: String, modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TarjetaResumen("Días asistidos", "18", Modifier.weight(1f))
-                TarjetaResumen("Horas del mes", "152", Modifier.weight(1f))
+                TarjetaResumen("Horas Extras", "12",Modifier.weight(1f))
             }
         }
 
