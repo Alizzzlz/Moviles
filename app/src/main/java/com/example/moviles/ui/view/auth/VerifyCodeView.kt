@@ -1,5 +1,6 @@
 package com.example.moviles.ui.view.auth
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,10 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -30,18 +34,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moviles.ui.theme.ObraCheckTheme
 
-@Preview(showBackground = true)
 @Composable
 fun VerifyCodeView(
     onNavigateToResetPassword: () -> Unit = {},
-    onNavigateToLogin: () -> Unit = {}
-){
+    onNavigateToLogin: () -> Unit = {},
+    onResendCode: () -> Unit = {}
+) {
     var code by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -51,21 +57,21 @@ fun VerifyCodeView(
             modifier = Modifier
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-
         ) {
             Text(
                 text = "Verificar Código",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "Hemos enviado un código de verificación de 6 dígitos a tu destino registrado ",
+                text = "Hemos enviado un código de verificación de 6 dígitos a tu destino registrado",
                 fontSize = 14.sp,
-                color = Color.Gray,
+                color = MaterialTheme.colorScheme.secondary,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 8.dp)
             )
@@ -74,56 +80,88 @@ fun VerifyCodeView(
 
             OutlinedTextField(
                 value = code,
-                onValueChange = {if ( it.length <=6 ) code = it}, //limite a 6 digitos
-                label = {Text("Código de verificación")},
-                placeholder = {Text("123456")},
+                onValueChange = { if (it.length <= 6) code = it },
+                label = { Text("Código de verificación") },
+                placeholder = { Text("123456") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.NumberPassword,
                     imeAction = ImeAction.Done
                 ),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
+                    focusedLabelColor = MaterialTheme.colorScheme.primary,
+                    unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
+                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                ),
+                shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
-
             )
 
-            Spacer(modifier = Modifier.height(22.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             Button(
-                onClick = {onNavigateToResetPassword()},
+                onClick = { onNavigateToResetPassword() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text(
                     text = "Confirmar código",
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(
-                onClick = {}
+                onClick = { onResendCode() }
             ) {
                 Text(
                     text = "¿No recibiste el código? Reenviar código",
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.secondary
                 )
             }
 
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
-                onClick = {onNavigateToLogin()}
+                onClick = { onNavigateToLogin() }
             ) {
                 Text(
                     text = "Volver al inicio de sesión",
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.tertiary
                 )
             }
-
-
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Claro")
+@Composable
+private fun VerifyCodeViewLightPreview() {
+    ObraCheckTheme(darkTheme = false) {
+        VerifyCodeView()
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Oscuro")
+@Composable
+private fun VerifyCodeViewDarkPreview() {
+    ObraCheckTheme(darkTheme = true) {
+        VerifyCodeView()
     }
 }

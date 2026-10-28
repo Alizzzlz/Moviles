@@ -1,7 +1,7 @@
 package com.example.moviles.ui.view.home
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,38 +22,31 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults.cardColors
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moviles.ui.theme.ColorExito
+import com.example.moviles.ui.theme.ObraCheckTheme
 
-
-
-// Alertas, estados y bordes
-val ErrorRed = Color(0xFFD32F2F)
-val SuccessGreen = Color(0xFF2D7831)
-val CardBorderGray = Color(0xFFE0E0E0)
-
-// Tipos de notificación para controlar estilos e íconos
 enum class TipoNotificacion {
     EXITO,
     ERROR
 }
 
-// Modelo de datos para las notificaciones
 data class NotificacionItem(
     val id: Int,
     val titulo: String,
@@ -63,12 +56,10 @@ data class NotificacionItem(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
 @Composable
 fun NotificationListView(
     onVolverAHome: () -> Unit = {}
 ) {
-    // Lista con las notificaciones requeridas
     val listaNotificaciones = listOf(
         NotificacionItem(
             id = 1,
@@ -107,7 +98,7 @@ fun NotificationListView(
                     Text(
                         text = "Notificaciones",
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
@@ -115,16 +106,16 @@ fun NotificationListView(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
-                colors = topAppBarColors(
-                    containerColor = SurfaceBlue
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = PrimaryDarkBlue
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
 
         LazyColumn(
@@ -149,19 +140,13 @@ fun NotificationListView(
 fun ItemNotificacionCard(notificacion: NotificacionItem) {
     val esError = notificacion.tipo == TipoNotificacion.ERROR
 
-    // Color del ícono y acentos según el tipo de notificación
-    val colorEstado = if (esError) ErrorRed else SuccessGreen
+    val colorEstado = if (esError) MaterialTheme.colorScheme.error else ColorExito
     val iconoEstado = if (esError) Icons.Default.Error else Icons.Default.CheckCircle
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = CardBorderGray.copy(alpha = 0.3f),
-                shape = RoundedCornerShape(14.dp)
-            ),
-        colors = cardColors(containerColor = SurfaceBlue),
+        modifier = Modifier.fillMaxWidth(),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         shape = RoundedCornerShape(14.dp)
     ) {
         Row(
@@ -170,12 +155,11 @@ fun ItemNotificacionCard(notificacion: NotificacionItem) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.Top
         ) {
-            // Contenedor del ícono circular con el color correspondiente (Verde o Rojo)
             Box(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(CircleShape)
-                    .background(colorEstado.copy(alpha = 0.2f)),
+                    .background(colorEstado.copy(alpha = 0.15f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -188,7 +172,6 @@ fun ItemNotificacionCard(notificacion: NotificacionItem) {
 
             Spacer(modifier = Modifier.width(14.dp))
 
-            // Detalle de la notificación
             Column(
                 modifier = Modifier.weight(1f)
             ) {
@@ -201,13 +184,13 @@ fun ItemNotificacionCard(notificacion: NotificacionItem) {
                         text = notificacion.titulo,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Text(
                         text = notificacion.hora,
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                 }
 
@@ -216,10 +199,26 @@ fun ItemNotificacionCard(notificacion: NotificacionItem) {
                 Text(
                     text = notificacion.mensaje,
                     fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = MaterialTheme.colorScheme.secondary,
                     lineHeight = 20.sp
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Claro")
+@Composable
+private fun NotificationListViewLightPreview() {
+    ObraCheckTheme(darkTheme = false) {
+        NotificationListView()
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Oscuro")
+@Composable
+private fun NotificationListViewDarkPreview() {
+    ObraCheckTheme(darkTheme = true) {
+        NotificationListView()
     }
 }
