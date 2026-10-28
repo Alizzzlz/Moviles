@@ -1,24 +1,36 @@
-package com.example.moviles.ui.theme
+package com.example.moviles.ui.theme // Ajusta según el paquete de tu app
 
 import androidx.compose.ui.graphics.Color
 
-// Paleta principal constructora
-val PrimaryBlue = Color(0xFF378DD2)         // Azul principal accesible
-val PrimaryDarkBlue = Color(0xFF493261)     // Azul oscuro corporativo (Fondo principal)
-val SurfaceBlue = Color(0xFF2A4B7C)         // Azul medio
-val SecondaryAmber = Color(0xFF894315)      // Naranja / Ámbar acento (Salida)
-val SuccessGreen = Color(0xFF2D7831)        // Verde confirmación (Entrada)
+// ------------------------------------------
+// PALETA MODO CLARO
+// ------------------------------------------
+val BotonClaro = Color(0xFF2563EB)
+val FondoClaro = Color(0xFFF8FAFC)
+val CasillaClara = Color(0xFFFFFFFF)
+val TextoClaro = Color(0xFF09112A)
+val TextoSecundarioClaro = Color(0xFF64748B)
+val BordeTarjetaClaro = Color(0xFFCFD5DE)
+val BotonTextoClaro = Color(0xFF1D4ED8)
+val BotonTextoSecundarioClaro = Color(0xFF757575)
 
-// Tonos pastel / contenedor suave para replicar la imagen
-val CardSoftPurpleBlue = Color(0xFFDCD6F7)  // Color suave para tarjetas de resumen y registros
-val OnCardSoftText = Color(0xFF4A3E7D)      // Texto oscuro para dentro de las tarjetas suaves
 
-// Alertas y bordes
-val ErrorRed = Color(0xFFD32F2F)
-val CardBorderGray = Color(0xFFE0E0E0)
+//------------------------------------------
+// ESTADOS Y ALERTAS (Semánticos)
+// ------------------------------------------
+val ColorError = Color(0xFFEF4444)
+val ColorExito = Color(0xFF22C55E)
 
-// Fondos y superficies
-val BackgroundLight = Color(0xFFF8F9FA)     // Blanco suave
-val SurfaceLight = Color(0xFFFFFFFF)        // Tarjeta blanca principal
-val OnBackgroundDark = Color(0xFF212121)    // Texto oscuro
-val OnSurfaceVariant = Color(0xFF757575)    // Texto secundario / Etiquetas
+
+// ------------------------------------------
+// PALETA MODO OSCURO
+// ------------------------------------------
+val FondoOscuro = Color(0xFF09112A)
+val BotonOscuro = Color(0xFF42A2D1)
+val TextoOscuro = Color(0xFFE4E9FF)
+val TarjetaOscura = Color(0xFF1E293B)
+val BordeTarjetaOscuro = Color(0xFF334155)
+val TextoBotonOscuro = Color(0xFFFFFFFF)
+val BordeCajaTexto = Color(0xFFCFD5DE)
+val BotonTextoOscuro = Color(0xFF38BDF8)
+val BotonTextoSecundarioOscuro = Color(0xFFF4F2F2)

@@ -1,6 +1,6 @@
 package com.example.moviles.ui.view.home
 
-
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -29,6 +29,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -37,19 +38,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.moviles.ui.theme.ObraCheckTheme
 
-
-val PrimaryBlue = Color(0xFF378DD2)
-val PrimaryDarkBlue = Color(0xFF493261)
-val SurfaceBlue = Color(0xFF2A4B7C)
-val ButtonGray = Color(0xFF6C757D)
-
-// Modelo de datos para las horas extras
 data class RegistroHoraExtra(
     val id: Int,
     val fecha: String,
@@ -59,12 +53,10 @@ data class RegistroHoraExtra(
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
 @Composable
 fun HoraExtraView(
     onVolverAHome: () -> Unit = {}
 ) {
-    // Datos de prueba para el listado
     val listaHorasExtras = listOf(
         RegistroHoraExtra(1, "24/10/2026", "18:00", "20:30", "2.5 hrs"),
         RegistroHoraExtra(2, "22/10/2026", "17:30", "19:30", "2.0 hrs"),
@@ -79,7 +71,7 @@ fun HoraExtraView(
                     Text(
                         text = "Horas Extras",
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 },
                 navigationIcon = {
@@ -87,16 +79,16 @@ fun HoraExtraView(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver a Home",
-                            tint = Color.White
+                            tint = MaterialTheme.colorScheme.onSurface
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = SurfaceBlue
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
             )
         },
-        containerColor = PrimaryDarkBlue
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
 
         LazyColumn(
@@ -108,12 +100,12 @@ fun HoraExtraView(
         ) {
             item { Spacer(modifier = Modifier.height(8.dp)) }
 
-            // Tarjeta de Resumen Mensual
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = SurfaceBlue),
-                    shape = RoundedCornerShape(16.dp)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Row(
                         modifier = Modifier
@@ -126,14 +118,14 @@ fun HoraExtraView(
                             Text(
                                 text = "Acumulado del Mes",
                                 fontSize = 14.sp,
-                                color = Color.White.copy(alpha = 0.8f)
+                                color = MaterialTheme.colorScheme.secondary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "9.5 Horas",
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -141,13 +133,13 @@ fun HoraExtraView(
                             modifier = Modifier
                                 .size(50.dp)
                                 .clip(CircleShape)
-                                .background(PrimaryBlue),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Timer,
                                 contentDescription = null,
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(28.dp)
                             )
                         }
@@ -155,11 +147,13 @@ fun HoraExtraView(
                 }
             }
 
-            // Botón de acción gris para registrar/solicitar hora extra
             item {
                 Button(
-                    onClick = { /* Acción para solicitar/registrar */ },
-                    colors = ButtonDefaults.buttonColors(containerColor = ButtonGray),
+                    onClick = { },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -167,31 +161,27 @@ fun HoraExtraView(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                        tint = Color.White
+                        contentDescription = null
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = "Registrar Nueva Hora Extra",
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            // Título de la sección
             item {
                 Text(
                     text = "Registros Recientes",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.padding(top = 8.dp)
                 )
             }
 
-            // Lista con detalle de hora inicio y termino
             items(listaHorasExtras) { registro ->
                 ItemHoraExtraCard(registro = registro)
             }
@@ -205,13 +195,13 @@ fun HoraExtraView(
 fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = SurfaceBlue),
-        shape = RoundedCornerShape(14.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Encabezado de la tarjeta: Fecha y Total acumulado
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -222,13 +212,13 @@ fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
-                            .background(PrimaryBlue),
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.MoreTime,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -237,7 +227,7 @@ fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
                         text = registro.fecha,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -245,16 +235,18 @@ fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
                     text = registro.totalHoras,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier
-                        .background(PrimaryBlue, shape = RoundedCornerShape(8.dp))
+                        .background(
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Detalle: Hora Inicio y Hora Término
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -263,13 +255,13 @@ fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
                     Text(
                         text = "Hora Inicio",
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
                         text = registro.horaInicio,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -277,16 +269,32 @@ fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
                     Text(
                         text = "Hora Término",
                         fontSize = 12.sp,
-                        color = Color.White.copy(alpha = 0.7f)
+                        color = MaterialTheme.colorScheme.secondary
                     )
                     Text(
                         text = registro.horaFin,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Claro")
+@Composable
+private fun HoraExtraViewLightPreview() {
+    ObraCheckTheme(darkTheme = false) {
+        HoraExtraView()
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Oscuro")
+@Composable
+private fun HoraExtraViewDarkPreview() {
+    ObraCheckTheme(darkTheme = true) {
+        HoraExtraView()
     }
 }
