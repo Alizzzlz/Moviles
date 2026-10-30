@@ -48,6 +48,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.exifinterface)
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
@@ -74,4 +75,7 @@ dependencies {
 
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    // Google Play Services: Location
+    implementation("com.google.android.gms:play-services-location:21.4.0")
+
 }

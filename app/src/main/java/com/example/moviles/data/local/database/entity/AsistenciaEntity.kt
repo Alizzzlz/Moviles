@@ -10,5 +10,8 @@ data class AsistenciaEntity(
     val fecha: String,        // Ejemplo: "2026-10-28"
     val horaMarcaje: String,   // Capturada automáticamente al marcar (Ejemplo: "17:45:00")
     val tipo: String,         // "Entrada" o "Salida"
-    val sincronizado: Boolean = false
+    val sincronizado: Boolean = false,
+    val fotoPath: String? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null
 )

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e2c80431f80c43b33fea6b5988391810",
+    "identityHash": "d8074ab746cf104b58651f6fce6d0537",
     "entities": [
       {
         "tableName": "asistencias",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `fecha` TEXT NOT NULL, `horaMarcaje` TEXT NOT NULL, `tipo` TEXT NOT NULL, `sincronizado` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `fecha` TEXT NOT NULL, `horaMarcaje` TEXT NOT NULL, `tipo` TEXT NOT NULL, `sincronizado` INTEGER NOT NULL, `fotoPath` TEXT, `latitud` REAL, `longitud` REAL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -37,6 +37,21 @@
             "columnName": "sincronizado",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "fotoPath",
+            "columnName": "fotoPath",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "latitud",
+            "columnName": "latitud",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "longitud",
+            "columnName": "longitud",
+            "affinity": "REAL"
           }
         ],
         "primaryKey": {
@@ -49,7 +64,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e2c80431f80c43b33fea6b5988391810')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd8074ab746cf104b58651f6fce6d0537')"
     ]
   }
 }
