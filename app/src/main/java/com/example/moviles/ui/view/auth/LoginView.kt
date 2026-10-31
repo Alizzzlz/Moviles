@@ -41,12 +41,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.viewmodel.AuthViewModel
 
 @Composable
 fun LoginView(
-    viewModel: AuthViewModel = viewModel (),
+    viewModel: AuthViewModel = viewModel(),
     onLoginSuccess: (String) -> Unit = {},
     onNavigateToRegister: () -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {}
@@ -79,7 +79,7 @@ fun LoginView(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo Correo Electrónico conectado al ViewModel
+            // 1. Campo Correo Electrónico
             OutlinedTextField(
                 value = uiState.email,
                 onValueChange = { viewModel.onEmailChanged(it) },
@@ -87,6 +87,15 @@ fun LoginView(
                 placeholder = { Text("ejemplo@correo.com") },
                 singleLine = true,
                 isError = !uiState.isEmailValid,
+                supportingText = {
+                    if (!uiState.isEmailValid) {
+                        Text(
+                            text = uiState.errorMessage ?: "Por favor, ingresa un correo electrónico válido.",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
+                        )
+                    }
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email,
                     imeAction = ImeAction.Next
@@ -99,21 +108,33 @@ fun LoginView(
                     focusedTextColor = MaterialTheme.colorScheme.onBackground,
                     unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Campo Contraseña
+            // 2. Campo Contraseña
             OutlinedTextField(
                 value = uiState.password,
                 onValueChange = { viewModel.onPasswordChanged(it) },
                 label = { Text("Contraseña") },
                 placeholder = { Text("Contraseña") },
                 singleLine = true,
+                isError = !uiState.isPasswordValid,
+                supportingText = {
+                    if (!uiState.isPasswordValid) {
+                        Text(
+                            text = uiState.passwordErrorMessage ?: "La contraseña es requerida.",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
+                        )
+                    }
+                },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
@@ -130,22 +151,15 @@ fun LoginView(
                     focusedTextColor = MaterialTheme.colorScheme.onBackground,
                     unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
                     focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
                 ),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Mensaje de error si la validación falla
-            if (uiState.errorMessage != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = uiState.errorMessage ?: "",
-                    color = MaterialTheme.colorScheme.error,
-                    fontSize = 12.sp,
-                    modifier = Modifier.align(Alignment.Start)
-                )
-            }
+            // NOTA: Se eliminó el bloque 'if (uiState.errorMessage != null)' que estaba suelto aquí
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -162,7 +176,7 @@ fun LoginView(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón Único Corregido
+            // Botón Único de Ingreso
             Button(
                 onClick = {
                     keyboardController?.hide()
@@ -213,8 +227,7 @@ fun LoginView(
 @Preview(showBackground = true, name = "Modo Claro")
 @Composable
 private fun LoginViewLightPreview() {
-    ObraCheckTheme(darkTheme = false) {
+    MarkTheme(darkTheme = false) {
         LoginView()
     }
 }
-

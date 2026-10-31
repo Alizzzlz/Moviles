@@ -40,7 +40,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviles.ui.theme.ColorExito
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.theme.MarkTheme
 
 enum class TipoNotificacion {
     EXITO,
@@ -210,7 +210,7 @@ fun ItemNotificacionCard(notificacion: NotificacionItem) {
 @Preview(showBackground = true, name = "Modo Claro")
 @Composable
 private fun NotificationListViewLightPreview() {
-    ObraCheckTheme(darkTheme = false) {
+    MarkTheme(darkTheme = false) {
         NotificationListView()
     }
 }
@@ -218,7 +218,7 @@ private fun NotificationListViewLightPreview() {
 @Preview(showBackground = true, name = "Modo Oscuro")
 @Composable
 private fun NotificationListViewDarkPreview() {
-    ObraCheckTheme(darkTheme = true) {
+    MarkTheme(darkTheme = true) {
         NotificationListView()
     }
 }

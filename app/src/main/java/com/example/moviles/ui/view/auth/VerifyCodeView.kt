@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.theme.MarkTheme
 
 @Composable
 fun VerifyCodeView(
@@ -153,7 +153,7 @@ fun VerifyCodeView(
 @Preview(showBackground = true, name = "Modo Claro")
 @Composable
 private fun VerifyCodeViewLightPreview() {
-    ObraCheckTheme(darkTheme = false) {
+    MarkTheme(darkTheme = false) {
         VerifyCodeView()
     }
 }
@@ -161,7 +161,7 @@ private fun VerifyCodeViewLightPreview() {
 @Preview(showBackground = true, name = "Modo Oscuro")
 @Composable
 private fun VerifyCodeViewDarkPreview() {
-    ObraCheckTheme(darkTheme = true) {
+    MarkTheme(darkTheme = true) {
         VerifyCodeView()
     }
 }

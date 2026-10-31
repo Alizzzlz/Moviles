@@ -42,7 +42,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.theme.MarkTheme
 
 data class RegistroHoraExtra(
     val id: Int,
@@ -286,7 +286,7 @@ fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
 @Preview(showBackground = true, name = "Modo Claro")
 @Composable
 private fun HoraExtraViewLightPreview() {
-    ObraCheckTheme(darkTheme = false) {
+    MarkTheme(darkTheme = false) {
         HoraExtraView()
     }
 }
@@ -294,7 +294,7 @@ private fun HoraExtraViewLightPreview() {
 @Preview(showBackground = true, name = "Modo Oscuro")
 @Composable
 private fun HoraExtraViewDarkPreview() {
-    ObraCheckTheme(darkTheme = true) {
+    MarkTheme(darkTheme = true) {
         HoraExtraView()
     }
 }

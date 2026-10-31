@@ -3,6 +3,7 @@ package com.example.moviles.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.datastore.UserPreferences
 import com.example.moviles.util.Validadores
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,28 +23,29 @@ data class PerfilUiState(
 class PerfilViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefs = UserPreferences(application)
+    private val usuarioDao = AppDatabase.getDatabase(application).usuarioDao()
 
+    // Combinamos el Flow de Room (para datos del usuario) con el Flow de DataStore (para tema oscuro)
     val perfil: StateFlow<PerfilUiState> = combine(
-        prefs.userName,
-        prefs.userRut,
-        prefs.userEmail,
+        usuarioDao.obtenerUsuarioPorId(1),
         prefs.isDarkTheme
-    ) { nombre, rut, email, oscuro ->
+    ) { usuario, oscuro ->
         PerfilUiState(
             cargado = true,
-            nombre = nombre,
-            rut = rut,
-            email = email,
+            nombre = usuario?.nombre ?: "",
+            rut = usuario?.rut ?: "",
+            email = usuario?.email ?: "",
             temaOscuro = oscuro
         )
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = PerfilUiState() // <-- Los paréntesis () resuelven el error principal
+        initialValue = PerfilUiState()
     )
 
     fun guardarPerfil(nombre: String, rut: String) {
         viewModelScope.launch {
+            // Actualizar también en DataStore si lo utilizas en otros componentes
             prefs.saveProfile(nombre.trim(), Validadores.formatearRut(rut))
         }
     }

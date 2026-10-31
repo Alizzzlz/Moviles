@@ -4,27 +4,39 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.moviles.ui.navigation.AuthNavGraph
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.navigation.MainNavGraph
+import com.example.moviles.ui.theme.MarkTheme
+import com.example.moviles.viewmodel.PerfilViewModel
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ObraCheckTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    val navController = rememberNavController()
-                    AuthNavGraph(navController = navController)
-                }
+            val perfilViewModel: PerfilViewModel = viewModel()
+            val perfilState by perfilViewModel.perfil.collectAsStateWithLifecycle()
+
+            val usarTemaOscuro = if (perfilState.cargado){
+                perfilState.temaOscuro
+            } else {
+                isSystemInDarkTheme()
+            }
+
+            MarkTheme(darkTheme = usarTemaOscuro) {
+                val navController = rememberNavController()
+                MainNavGraph(navController = navController)
+
             }
         }
     }

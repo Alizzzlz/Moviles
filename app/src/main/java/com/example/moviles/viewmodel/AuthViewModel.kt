@@ -3,21 +3,26 @@ package com.example.moviles.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.datastore.UserPreferences
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 data class AuthUiState(
     val email: String = "",
-    val password: String = "", // Agregado para el login
+    val password: String = "",
     val rut: String = "",
     val isRutValid: Boolean = true,
     val isEmailValid: Boolean = true,
+    val isPasswordValid: Boolean = true, // <-- Nuevo campo de validez
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val passwordErrorMessage: String? = null, // <-- Error específico para la contraseña
     val isAuthenticated: Boolean = false
 )
 
@@ -29,10 +34,10 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     fun onEmailChanged(newEmail: String) {
-        val isValid = newEmail.contains("@") && newEmail.contains(".")
+        val isValidFormat = newEmail.contains("@") && newEmail.contains(".")
         _uiState.value = _uiState.value.copy(
             email = newEmail,
-            isEmailValid = isValid || newEmail.isEmpty(),
+            isEmailValid = isValidFormat || newEmail.isEmpty(),
             errorMessage = null
         )
     }
@@ -40,7 +45,8 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     fun onPasswordChanged(newPassword: String) {
         _uiState.value = _uiState.value.copy(
             password = newPassword,
-            errorMessage = null
+            isPasswordValid = newPassword.isNotEmpty(), // Resetea el error al escribir
+            passwordErrorMessage = null
         )
     }
 
@@ -51,31 +57,69 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         )
     }
 
-    // Cambiamos onSuccess: () -> Unit por onSuccess: (String) -> Unit
     fun login(onSuccess: (String) -> Unit) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
+        viewModelScope.launch(Dispatchers.IO) {
+            val emailActual = _uiState.value.email.trim()
+            val passwordActual = _uiState.value.password.trim()
 
-            val emailActual = _uiState.value.email
+            val esEmailValido =
+                emailActual.isNotBlank() && emailActual.contains("@") && emailActual.contains(".")
+            val esPasswordValida = passwordActual.isNotBlank()
 
-            if (emailActual.isNotBlank() && _uiState.value.isEmailValid) {
-                // Extrae un nombre de usuario formateado (Ej: "juan.perez@obra.cl" -> "Juan.perez")
-                val nombreUsuario = emailActual.substringBefore("@")
-                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+            // 1. Validar que los campos no estén vacíos
+            if (!esEmailValido || !esPasswordValida) {
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isEmailValid = esEmailValido,
+                        isPasswordValid = esPasswordValida,
+                        errorMessage = if (emailActual.isEmpty()) "El correo electrónico es obligatorio." else if (!esEmailValido) "Por favor, ingresa un correo electrónico válido." else null,
+                        passwordErrorMessage = if (passwordActual.isEmpty()) "La contraseña es requerida." else null
+                    )
+                }
+                return@launch
+            }
 
-                userPreferences.saveAuthToken("token_demo_123", _uiState.value.rut)
+            withContext(Dispatchers.Main) {
+                _uiState.value = _uiState.value.copy(isLoading = true)
+            }
 
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    isAuthenticated = true
-                )
+            // 2. Buscar usuario en Room
+            val dao = AppDatabase.getDatabase(getApplication()).usuarioDao()
+            val usuarioEncontrado = dao.obtenerUsuarioPorEmail(emailActual)
 
-                onSuccess(nombreUsuario)
+            // 3. Comparar correo y contraseña (ignorando mayúsculas/minúsculas en el email)
+            val esCredencialCorrecta = usuarioEncontrado != null &&
+                    usuarioEncontrado.email.equals(emailActual, ignoreCase = true) &&
+                    usuarioEncontrado.password == passwordActual
+
+            if (esCredencialCorrecta && usuarioEncontrado != null) {
+                // Guardar token en DataStore
+                userPreferences.saveAuthToken("token_demo_123", usuarioEncontrado.rut)
+
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isAuthenticated = true,
+                        isEmailValid = true,
+                        isPasswordValid = true,
+                        errorMessage = null,
+                        passwordErrorMessage = null
+                    )
+                    // Retornar nombre a la vista de navegación
+                    onSuccess(usuarioEncontrado.nombre)
+                }
             } else {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    errorMessage = "Por favor, ingresa un correo electrónico válido."
-                )
+                // Rechazar login si la contraseña o correo no coinciden
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isEmailValid = false,
+                        isPasswordValid = false,
+                        errorMessage = "Correo o contraseña incorrectos.",
+                        passwordErrorMessage = "Correo o contraseña incorrectos."
+                    )
+                }
             }
         }
     }
