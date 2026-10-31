@@ -34,7 +34,7 @@ private val EsquemaColorClaro = lightColorScheme(
 )
 
 @Composable
-fun ObraCheckTheme(
+fun MarkTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {

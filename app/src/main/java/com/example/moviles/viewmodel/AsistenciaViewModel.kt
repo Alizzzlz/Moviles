@@ -3,7 +3,7 @@ package com.example.moviles.ui.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.moviles.data.local.database.AppDatabase
+import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.database.entity.AsistenciaEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow

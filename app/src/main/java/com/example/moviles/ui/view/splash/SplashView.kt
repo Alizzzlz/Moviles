@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +27,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,8 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviles.R
-
-val PrimaryDarkBlue = Color(0xFF493261)
 
 private const val DURACION_SPLASH_MS = 3000
 
@@ -46,18 +44,16 @@ fun SplashView(
     val rotation = remember { Animatable(-180f) }
     val progreso = remember { Animatable(0f) }
 
-    // Siempre llama a la versión más reciente del callback aunque la pantalla se recomponga
     val onFinishedActual by rememberUpdatedState(onFinished)
 
-    // Animación del logo (gira de -180° a 0°)
     LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(300)
         rotation.animateTo(
             targetValue = 0f,
-            animationSpec = spring(dampingRatio = 0.9f, stiffness = 300f)
+            animationSpec = spring(dampingRatio = 1f, stiffness = 50f)
         )
     }
 
-    // Barra de carga: se llena en 3 segundos y al terminar navega
     LaunchedEffect(Unit) {
         progreso.animateTo(
             targetValue = 1f,
@@ -69,7 +65,8 @@ fun SplashView(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(PrimaryDarkBlue),
+            // Usa el color de fondo dinámico según el tema del sistema/app
+            .background(MaterialTheme.colorScheme.background),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -91,7 +88,7 @@ fun SplashView(
                 text = "Obra Check",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -99,20 +96,19 @@ fun SplashView(
             Text(
                 text = "Control de Asistencia",
                 fontSize = 16.sp,
-                color = Color.White
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
             )
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            // Diseño de "cargando"
             LinearProgressIndicator(
                 progress = { progreso.value },
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = Color.White,
-                trackColor = Color.White.copy(alpha = 0.25f)
+                color = MaterialTheme.colorScheme.primary,
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -120,7 +116,7 @@ fun SplashView(
             Text(
                 text = "Cargando...",
                 fontSize = 14.sp,
-                color = Color.White.copy(alpha = 0.8f),
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
         }
@@ -132,4 +128,3 @@ fun SplashView(
 private fun SplashViewPreview() {
     SplashView()
 }
-

@@ -26,7 +26,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
 import com.example.moviles.ui.viewmodel.AsistenciaUiState
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
@@ -144,7 +144,7 @@ fun HomeView(
         ) { pestana ->
             when (pestana) {
                 0 -> HomeContent(
-                    nombre = nombreUsuario,
+                    nombre = perfil.nombre.ifBlank { nombreUsuario },
                     state = state,
                     onIniciarMarcaje = viewModel::iniciarMarcaje,
                     onNavegarAHorasExtras = onNavegarAHorasExtras
@@ -450,7 +450,7 @@ fun HomeContent(
 @Preview(showBackground = true)
 @Composable
 private fun HomeContentPreview() {
-    ObraCheckTheme {
+    MarkTheme {
         HomeContent(
             nombre = "Juan Pérez",
             state = AsistenciaUiState(),

@@ -1,15 +1,26 @@
-package com.example.moviles.data.local.database
+package com.example.moviles.data.local
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.moviles.data.local.database.dao.AsistenciaDao
+import com.example.moviles.data.local.database.dao.UsuarioDao
 import com.example.moviles.data.local.database.entity.AsistenciaEntity
+import com.example.moviles.data.local.entity.UsuarioEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
-@Database(entities = [AsistenciaEntity::class], version = 1, exportSchema = true)
+@Database(
+    entities = [UsuarioEntity::class, AsistenciaEntity::class],
+    version = 1,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
+    abstract fun usuarioDao(): UsuarioDao
     abstract fun asistenciaDao(): AsistenciaDao
 
     companion object {
@@ -22,7 +33,27 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "obra_check_db"
-                ).build()
+                )
+                    .addCallback(object : RoomDatabase.Callback() {
+                        override fun onCreate(db: SupportSQLiteDatabase) {
+                            super.onCreate(db)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                // Obtenemos la instancia válida a través de getDatabase
+                                getDatabase(context).usuarioDao().insertarUsuario(
+                                    UsuarioEntity(
+                                        id = 1,
+                                        nombre = "Vania Valdés",
+                                        rut = "12.345.678-9",
+                                        email = "Vani.Valdes@empresa.cl",
+                                        password = "123",
+                                        cargo = "Operadora Técnica"
+                                    )
+                                )
+                            }
+                        }
+                    })
+                    .build()
+
                 INSTANCE = instance
                 instance
             }

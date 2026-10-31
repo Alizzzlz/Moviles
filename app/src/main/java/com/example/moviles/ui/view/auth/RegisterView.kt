@@ -43,7 +43,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moviles.ui.theme.ObraCheckTheme
+import com.example.moviles.ui.theme.MarkTheme
 
 @Composable
 fun RegisterView(
@@ -318,7 +318,7 @@ fun RegisterView(
 @Preview(showBackground = true, name = "Modo Claro")
 @Composable
 private fun RegisterViewLightPreview() {
-    ObraCheckTheme(darkTheme = false) {
+    MarkTheme(darkTheme = false) {
         RegisterView()
     }
 }
@@ -326,7 +326,7 @@ private fun RegisterViewLightPreview() {
 @Preview(showBackground = true, name = "Modo Oscuro")
 @Composable
 private fun RegisterViewDarkPreview() {
-    ObraCheckTheme(darkTheme = true) {
+    MarkTheme(darkTheme = true) {
         RegisterView()
     }
 }
