@@ -20,6 +20,7 @@ object Validadores {
             suma += c.digitToInt() * multiplicador
             multiplicador = if (multiplicador == 7) 2 else multiplicador + 1
         }
+
         val resto = 11 - (suma % 11)
         val esperado = when (resto) {
             11 -> '0'
@@ -32,9 +33,12 @@ object Validadores {
     /** "123456785" -> "12.345.678-5" */
     fun formatearRut(rut: String): String {
         val limpio = rut.replace(".", "").replace("-", "").trim().uppercase()
-        if (limpio.length < 2) return rut
+        if (limpio.length < 8) return limpio
+
         val cuerpo = limpio.dropLast(1).reversed().chunked(3).joinToString(".").reversed()
-        return "$cuerpo-${limpio.last()}"
+        val dv = limpio.last()
+
+        return "$cuerpo-$dv"
     }
 
     fun rutError(rut: String): String? = when {
@@ -47,7 +51,6 @@ object Validadores {
     fun nombreError(nombre: String): String? = when {
         nombre.isBlank() -> "El nombre es obligatorio"
         !REGEX_NOMBRE.matches(nombre.trim()) -> "Solo se permiten letras"
-        nombre.trim().split(" ").filter { it.isNotBlank() }.size < 2 -> "Ingresa nombre y apellido"
         else -> null
     }
 

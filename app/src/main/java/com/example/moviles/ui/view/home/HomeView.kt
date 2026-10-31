@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
@@ -37,7 +38,8 @@ data class NavItem(val titulo: String, val icono: ImageVector)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeView(
-    nombreUsuario: String = "Juan Pérez",
+    usuarioId: Int, // Se agrega usuarioId para consultar dinámicamente el perfil en Room
+    nombreUsuario: String = "Usuario",
     viewModel: AsistenciaViewModel = viewModel(),
     perfilViewModel: PerfilViewModel = viewModel(),
     onNavegarAHorasExtras: () -> Unit = {},
@@ -46,9 +48,14 @@ fun HomeView(
     onNavegarAAjustes: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
+    // Al abrir HomeView, notificamos a PerfilViewModel cuál es el usuario activo
+    LaunchedEffect(usuarioId) {
+        perfilViewModel.cargarPerfil(usuarioId)
+    }
+
     // Estado que viene de Room (a través del ViewModel). Se actualiza solo.
-    val state by viewModel.uiState.collectAsState()
-    val perfil by perfilViewModel.perfil.collectAsState()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val perfil by perfilViewModel.perfil.collectAsStateWithLifecycle()
 
     // rememberSaveable: la pestaña elegida sobrevive a rotaciones
     var itemSeleccionado by rememberSaveable { mutableStateOf(0) }

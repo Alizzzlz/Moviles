@@ -32,8 +32,9 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "obra_check_db"
+                    "Mark_db"
                 )
+                    .fallbackToDestructiveMigration()
                     .addCallback(object : RoomDatabase.Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
@@ -42,7 +43,8 @@ abstract class AppDatabase : RoomDatabase() {
                                 getDatabase(context).usuarioDao().insertarUsuario(
                                     UsuarioEntity(
                                         id = 1,
-                                        nombre = "Vania Valdés",
+                                        nombres = "Vania Constanza",
+                                        apellidos = "Álvares Valdés",
                                         rut = "12.345.678-9",
                                         email = "Vani.Valdes@empresa.cl",
                                         password = "123",

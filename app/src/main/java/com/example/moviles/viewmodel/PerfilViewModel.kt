@@ -6,9 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.datastore.UserPreferences
 import com.example.moviles.util.Validadores
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -25,14 +29,23 @@ class PerfilViewModel(application: Application) : AndroidViewModel(application) 
     private val prefs = UserPreferences(application)
     private val usuarioDao = AppDatabase.getDatabase(application).usuarioDao()
 
-    // Combinamos el Flow de Room (para datos del usuario) con el Flow de DataStore (para tema oscuro)
+    // Estado local para el ID del usuario activo
+    private val _usuarioId = MutableStateFlow<Int?>(null)
+
+    // Escuchamos los cambios del usuario según el ID seleccionado
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val usuarioFlow = _usuarioId.flatMapLatest { id ->
+        if (id != null) usuarioDao.obtenerUsuarioPorId(id) else flowOf(null)
+    }
+
+    // Combinamos el usuario actual con el tema oscuro
     val perfil: StateFlow<PerfilUiState> = combine(
-        usuarioDao.obtenerUsuarioPorId(1),
+        usuarioFlow,
         prefs.isDarkTheme
     ) { usuario, oscuro ->
         PerfilUiState(
             cargado = true,
-            nombre = usuario?.nombre ?: "",
+            nombre = usuario?.nombreCompleto ?: "",
             rut = usuario?.rut ?: "",
             email = usuario?.email ?: "",
             temaOscuro = oscuro
@@ -43,9 +56,13 @@ class PerfilViewModel(application: Application) : AndroidViewModel(application) 
         initialValue = PerfilUiState()
     )
 
+    /** Carga los datos del usuario logueado usando su ID */
+    fun cargarPerfil(id: Int) {
+        _usuarioId.value = id
+    }
+
     fun guardarPerfil(nombre: String, rut: String) {
         viewModelScope.launch {
-            // Actualizar también en DataStore si lo utilizas en otros componentes
             prefs.saveProfile(nombre.trim(), Validadores.formatearRut(rut))
         }
     }

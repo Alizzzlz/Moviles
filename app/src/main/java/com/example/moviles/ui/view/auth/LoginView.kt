@@ -14,9 +14,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -47,7 +52,7 @@ import com.example.moviles.viewmodel.AuthViewModel
 @Composable
 fun LoginView(
     viewModel: AuthViewModel = viewModel(),
-    onLoginSuccess: (String) -> Unit = {},
+    onLoginSuccess: (Int) -> Unit = {},
     onNavigateToRegister: () -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {}
 ) {
@@ -136,6 +141,14 @@ fun LoginView(
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val description = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(imageVector = image, contentDescription = description)
+                    }
+                },
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Password,
                     imeAction = ImeAction.Done
@@ -159,8 +172,6 @@ fun LoginView(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // NOTA: Se eliminó el bloque 'if (uiState.errorMessage != null)' que estaba suelto aquí
-
             Spacer(modifier = Modifier.height(4.dp))
 
             TextButton(
@@ -180,8 +191,9 @@ fun LoginView(
             Button(
                 onClick = {
                     keyboardController?.hide()
-                    viewModel.login { nombreIngresado ->
-                        onLoginSuccess(nombreIngresado)
+                    viewModel.login { usuarioId ->
+                        val idInt = usuarioId.toString().toIntOrNull() ?: 1
+                        onLoginSuccess(idInt)
                     }
                 },
                 enabled = !uiState.isLoading,
