@@ -5,11 +5,15 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "usuarios")
 data class UsuarioEntity(
-    @PrimaryKey
-    val id: Int = 1,
-    val nombre: String,
+    @PrimaryKey(autoGenerate = true)
+    val id: Int = 0,
+    val nombres: String,
+    val apellidos : String,
     val rut: String,
     val email: String,
     val password: String,
     val cargo: String
-)
+){
+    val nombreCompleto: String
+        get() = "$nombres $apellidos".trim()
+}

@@ -5,13 +5,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.datastore.UserPreferences
+import com.example.moviles.data.local.entity.UsuarioEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 
 data class AuthUiState(
     val email: String = "",
@@ -19,14 +19,14 @@ data class AuthUiState(
     val rut: String = "",
     val isRutValid: Boolean = true,
     val isEmailValid: Boolean = true,
-    val isPasswordValid: Boolean = true, // <-- Nuevo campo de validez
+    val isPasswordValid: Boolean = true,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val passwordErrorMessage: String? = null, // <-- Error específico para la contraseña
+    val passwordErrorMessage: String? = null,
     val isAuthenticated: Boolean = false
 )
 
-class AuthViewModel(application: Application): AndroidViewModel(application) {
+class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     private val userPreferences = UserPreferences(application)
 
@@ -45,7 +45,7 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
     fun onPasswordChanged(newPassword: String) {
         _uiState.value = _uiState.value.copy(
             password = newPassword,
-            isPasswordValid = newPassword.isNotEmpty(), // Resetea el error al escribir
+            isPasswordValid = newPassword.isNotEmpty(),
             passwordErrorMessage = null
         )
     }
@@ -57,16 +57,15 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
         )
     }
 
-    fun login(onSuccess: (String) -> Unit) {
+    // 👈 1. Login ahora devuelve Int (usuarioId)
+    fun login(onSuccess: (Int) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val emailActual = _uiState.value.email.trim()
             val passwordActual = _uiState.value.password.trim()
 
-            val esEmailValido =
-                emailActual.isNotBlank() && emailActual.contains("@") && emailActual.contains(".")
+            val esEmailValido = emailActual.isNotBlank() && emailActual.contains("@") && emailActual.contains(".")
             val esPasswordValida = passwordActual.isNotBlank()
 
-            // 1. Validar que los campos no estén vacíos
             if (!esEmailValido || !esPasswordValida) {
                 withContext(Dispatchers.Main) {
                     _uiState.value = _uiState.value.copy(
@@ -84,17 +83,14 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
                 _uiState.value = _uiState.value.copy(isLoading = true)
             }
 
-            // 2. Buscar usuario en Room
             val dao = AppDatabase.getDatabase(getApplication()).usuarioDao()
             val usuarioEncontrado = dao.obtenerUsuarioPorEmail(emailActual)
 
-            // 3. Comparar correo y contraseña (ignorando mayúsculas/minúsculas en el email)
             val esCredencialCorrecta = usuarioEncontrado != null &&
                     usuarioEncontrado.email.equals(emailActual, ignoreCase = true) &&
                     usuarioEncontrado.password == passwordActual
 
             if (esCredencialCorrecta && usuarioEncontrado != null) {
-                // Guardar token en DataStore
                 userPreferences.saveAuthToken("token_demo_123", usuarioEncontrado.rut)
 
                 withContext(Dispatchers.Main) {
@@ -106,11 +102,10 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
                         errorMessage = null,
                         passwordErrorMessage = null
                     )
-                    // Retornar nombre a la vista de navegación
-                    onSuccess(usuarioEncontrado.nombre)
+                    // Retornar ID int del usuario
+                    onSuccess(usuarioEncontrado.id)
                 }
             } else {
-                // Rechazar login si la contraseña o correo no coinciden
                 withContext(Dispatchers.Main) {
                     _uiState.value = _uiState.value.copy(
                         isLoading = false,
@@ -120,6 +115,72 @@ class AuthViewModel(application: Application): AndroidViewModel(application) {
                         passwordErrorMessage = "Correo o contraseña incorrectos."
                     )
                 }
+            }
+        }
+    }
+
+    // 👈 2. Register ahora devuelve Int (usuarioId recién insertado)
+    fun register(
+        nombres: String,
+        apellidos: String,
+        rut: String,
+        email: String,
+        password: String,
+        onSuccess: (Int) -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val emailTrimmed = email.trim()
+            val nombresTrimmed = nombres.trim()
+            val apellidosTrimmed = apellidos.trim()
+            val rutTrimmed = rut.trim()
+            val passwordTrimmed = password.trim()
+
+            if (nombresTrimmed.isBlank() || apellidosTrimmed.isBlank() || rutTrimmed.isBlank() || emailTrimmed.isBlank() || passwordTrimmed.isBlank()) {
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = "Todos los campos son obligatorios."
+                    )
+                }
+                return@launch
+            }
+
+            withContext(Dispatchers.Main) { _uiState.value = _uiState.value.copy(isLoading = true) }
+
+            val dao = AppDatabase.getDatabase(getApplication()).usuarioDao()
+
+            val existente = dao.obtenerUsuarioPorEmail(emailTrimmed)
+            if (existente != null) {
+                withContext(Dispatchers.Main) {
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        errorMessage = "Este correo electrónico ya está registrado."
+                    )
+                }
+                return@launch
+            }
+
+            val nuevoUsuario = UsuarioEntity(
+                id = 0,
+                nombres = nombresTrimmed,
+                apellidos = apellidosTrimmed,
+                rut = rutTrimmed,
+                email = emailTrimmed,
+                password = passwordTrimmed,
+                cargo = "Operador"
+            )
+
+            dao.insertarUsuario(nuevoUsuario)
+            val usuarioCreado = dao.obtenerUsuarioPorEmail(emailTrimmed)
+            val usuarioIdGenerado = usuarioCreado?.id ?: 1
+
+            userPreferences.saveAuthToken("token_demo_123", rutTrimmed)
+
+            withContext(Dispatchers.Main) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = null
+                )
+                onSuccess(usuarioIdGenerado)
             }
         }
     }

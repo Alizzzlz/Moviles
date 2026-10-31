@@ -6,8 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.moviles.ui.view.auth.*
 import com.example.moviles.ui.view.home.*
 import com.example.moviles.ui.view.onboarding.*
@@ -36,9 +38,8 @@ fun MainNavGraph(navController: NavHostController) {
         // --- AUTH ---
         composable(Screen.Login.route) {
             LoginView(
-                onLoginSuccess = { _ ->
-                    // Navegación directa al Home de forma limpia
-                    navController.navigate(Screen.Home.route) {
+                onLoginSuccess = { usuarioId ->
+                    navController.navigate(Screen.Home.createRoute(usuarioId)) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 },
@@ -53,7 +54,16 @@ fun MainNavGraph(navController: NavHostController) {
 
         composable(Screen.Register.route) {
             RegisterView(
-                onNavigateToLogin = { navController.popBackStack() }
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                },
+                onNavigateToHome = { usuarioId ->
+                    navController.navigate(Screen.Home.createRoute(usuarioId)) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -103,9 +113,25 @@ fun MainNavGraph(navController: NavHostController) {
             )
         }
 
-        // --- HOME ---
-        composable(Screen.Home.route) {
-            HomeView()
+        // --- HOME (Acepta el ID del usuario como argumento de ruta) ---
+        composable(
+            route = Screen.Home.route,
+            arguments = listOf(navArgument("usuarioId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val usuarioId = backStackEntry.arguments?.getInt("usuarioId") ?: return@composable
+
+            HomeView(
+                usuarioId = usuarioId,
+                onNavegarAHorasExtras = { navController.navigate(Screen.HoraExtra.route) },
+                onNavegarANotificaciones = { navController.navigate(Screen.Notifications.route) },
+                onNavegarAEditarPerfil = { navController.navigate(Screen.EditProfile.route) },
+                onNavegarAAjustes = { navController.navigate(Screen.Settings.route) },
+                onCerrarSesion = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
+            )
         }
 
         composable(Screen.HoraExtra.route) {
@@ -131,7 +157,7 @@ fun MainNavGraph(navController: NavHostController) {
 
             if (perfilState.cargado) {
                 ProfileView(
-                    nombre = if (perfilState.nombre.isNotBlank()) perfilState.nombre else "Usuario",
+                    nombre = perfilState.nombre.ifBlank { "Usuario" },
                     rut = perfilState.rut,
                     email = perfilState.email,
                     onEditarPerfil = { navController.navigate(Screen.EditProfile.route) },
@@ -151,6 +177,82 @@ fun MainNavGraph(navController: NavHostController) {
 
         composable(Screen.Settings.route) {
             SettingsView(onVolver = { navController.popBackStack() })
+        }
+
+        // --- AUTH ---
+        composable(Screen.Login.route) {
+            LoginView(
+                onLoginSuccess = { usuarioId ->
+                    navController.navigate(Screen.Home.createRoute(usuarioId)) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route)
+                },
+                onNavigateToForgotPassword = {
+                    navController.navigate(Screen.ForgotPasswordEmail.route)
+                }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            RegisterView(
+                onNavigateToLogin = {
+                    navController.popBackStack() // Mantiene el comportamiento original de regresar al Login
+                },
+                onNavigateToHome = { usuarioId ->
+                    navController.navigate(Screen.Home.createRoute(usuarioId)) {
+                        popUpTo(Screen.Register.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.ForgotPasswordEmail.route) {
+            ForgotPasswordEmailView(
+                onNavigateToPhone = { navController.navigate(Screen.ForgotPasswordPhone.route) },
+                onNavigateToLogin = { navController.popBackStack() },
+                onSendCode = { navController.navigate(Screen.VerifyCode.route) }
+            )
+        }
+
+        composable(Screen.ForgotPasswordPhone.route) {
+            ForgotPasswordPhoneView(
+                onNavigateToEmail = { navController.popBackStack() },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onSendCode = { navController.navigate(Screen.VerifyCode.route) }
+            )
+        }
+
+        composable(Screen.VerifyCode.route) {
+            VerifyCodeView(
+                onNavigateToResetPassword = { navController.navigate(Screen.ResetPassword.route) },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.ResetPassword.route) {
+            ResetPasswordView(
+                onPasswordResetSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                },
+                onCancel = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }
