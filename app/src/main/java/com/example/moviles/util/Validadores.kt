@@ -21,6 +21,7 @@ object Validadores {
             multiplicador = if (multiplicador == 7) 2 else multiplicador + 1
         }
 
+        // Línea corregida: Se agregó el operador de resta '-'
         val resto = 11 - (suma % 11)
         val esperado = when (resto) {
             11 -> '0'

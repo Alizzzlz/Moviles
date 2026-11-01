@@ -33,11 +33,14 @@ import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
 import com.example.moviles.ui.viewmodel.AsistenciaUiState
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
+import com.example.moviles.ui.viewmodel.MarcajeDraft
 import com.example.moviles.viewmodel.PerfilViewModel
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+
+
 
 data class NavItem(val titulo: String, val icono: ImageVector)
 
@@ -195,14 +198,25 @@ fun HomeView(
     state.draft?.let { borrador ->
         MarcajeDialog(
             draft = borrador,
-            onUbicacionObtenida = viewModel::ubicacionObtenida,
-            onUbicacionError = viewModel::ubicacionFallida,
-            onReintentarUbicacion = viewModel::reintentarUbicacion,
-            onFotoTomada = viewModel::fotoTomada,
-            onConfirmar = viewModel::confirmarMarcaje,
-            onCancelar = viewModel::cancelarMarcaje
+            onUbicacionObtenida = { lat, lon -> viewModel.ubicacionObtenida(lat, lon) },
+            onUbicacionError = { err -> viewModel.ubicacionFallida(err) },
+            onReintentarUbicacion = { viewModel.reintentarUbicacion() },
+            onFotoTomada = { ruta -> viewModel.fotoTomada(ruta) },
+            onConfirmar = { viewModel.confirmarMarcaje() },
+            onCancelar = { viewModel.cancelarMarcaje() }
         )
     }
+}
+
+fun MarcajeDialog(
+    draft: com.example.moviles.ui.viewmodel.MarcajeDraft,
+    onUbicacionObtenida: (Double, Double) -> Unit,
+    onUbicacionError: (String) -> Unit,
+    onReintentarUbicacion: () -> Unit,
+    onFotoTomada: (String) -> Unit,
+    onConfirmar: () -> Unit,
+    onCancelar: () -> Unit
+) {
 }
 
 @Composable
