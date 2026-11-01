@@ -52,7 +52,7 @@ import com.example.moviles.viewmodel.AuthViewModel
 @Composable
 fun LoginView(
     viewModel: AuthViewModel = viewModel(),
-    onLoginSuccess: (Int) -> Unit = {},
+    onLoginSuccessWithRole: (Int, String) -> Unit = { _, _ -> },
     onNavigateToRegister: () -> Unit = {},
     onNavigateToForgotPassword: () -> Unit = {}
 ) {
@@ -191,9 +191,8 @@ fun LoginView(
             Button(
                 onClick = {
                     keyboardController?.hide()
-                    viewModel.login { usuarioId ->
-                        val idInt = usuarioId.toString().toIntOrNull() ?: 1
-                        onLoginSuccess(idInt)
+                    viewModel.login { usuarioId, rol ->
+                        onLoginSuccessWithRole(usuarioId, rol)
                     }
                 },
                 enabled = !uiState.isLoading,

@@ -19,7 +19,7 @@ import java.util.Locale
 
 /** Marcaje "en borrador": se está armando en el diálogo (GPS + foto) y aún no se guarda. */
 data class MarcajeDraft(
-    val tipo: String,                       // "Entrada" o "Salida"
+    val tipo: String,                       // "Entrada", "Inicio Colación", "Fin Colación" o "Salida"
     val cargandoUbicacion: Boolean = true,
     val latitud: Double? = null,
     val longitud: Double? = null,
@@ -28,8 +28,10 @@ data class MarcajeDraft(
 )
 
 data class AsistenciaUiState(
-    val estadoMarcaje: Int = 0,            // 0 = sin marcar, 1 = marcó entrada, 2 = jornada completa
+    val estadoMarcaje: Int = 0,            // 0 = Entrada, 1 = Inicio Colación, 2 = Fin Colación, 3 = Salida, 4 = Completa
     val horaEntrada: String = "--:--",
+    val horaInicioColacion: String = "--:--",
+    val horaFinColacion: String = "--:--",
     val horaSalida: String = "--:--",
     val historial: List<AsistenciaEntity> = emptyList(),
     val diasAsistidos: Int = 0,
@@ -45,24 +47,33 @@ class AsistenciaViewModel(application: Application) : AndroidViewModel(applicati
     private val _mensaje = MutableStateFlow<String?>(null)
 
     /**
-     * Combina 3 fuentes en un solo estado para la pantalla:
-     * el historial de Room (se actualiza solo), el borrador del diálogo y el mensaje.
+     * Combina el historial de Room con las 4 etapas de la jornada del día actual.
+     * Al cambiar el día, 'deHoy' se evalúa vacío y reactiva automáticamente el botón a 'Entrada' (estado 0).
      */
     val uiState: StateFlow<AsistenciaUiState> = combine(
         dao.obtenerHistorial(), _draft, _mensaje
     ) { historial, draft, mensaje ->
         val hoy = fechaHoy()
         val deHoy = historial.filter { it.fecha == hoy }
+
         val entrada = deHoy.lastOrNull { it.tipo == "Entrada" }
+        val inicioColacion = deHoy.lastOrNull { it.tipo == "Inicio Colación" }
+        val finColacion = deHoy.lastOrNull { it.tipo == "Fin Colación" }
         val salida = deHoy.lastOrNull { it.tipo == "Salida" }
 
+        val estadoActual = when {
+            salida != null -> 4          // Jornada Completa
+            finColacion != null -> 3     // Listo para Marcar Salida
+            inicioColacion != null -> 2  // Listo para Marcar Fin Colación
+            entrada != null -> 1         // Listo para Marcar Inicio Colación
+            else -> 0                    // Listo para Marcar Entrada
+        }
+
         AsistenciaUiState(
-            estadoMarcaje = when {
-                salida != null -> 2
-                entrada != null -> 1
-                else -> 0
-            },
+            estadoMarcaje = estadoActual,
             horaEntrada = entrada?.horaMarcaje?.take(5) ?: "--:--",
+            horaInicioColacion = inicioColacion?.horaMarcaje?.take(5) ?: "--:--",
+            horaFinColacion = finColacion?.horaMarcaje?.take(5) ?: "--:--",
             horaSalida = salida?.horaMarcaje?.take(5) ?: "--:--",
             historial = historial,
             diasAsistidos = historial.filter { it.tipo == "Entrada" }.map { it.fecha }.distinct().size,
@@ -127,8 +138,6 @@ class AsistenciaViewModel(application: Application) : AndroidViewModel(applicati
         _mensaje.value = null
     }
 
-    // ---------- Utilidades ----------
-
     private fun fechaHoy(): String =
         SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
 
@@ -136,8 +145,3 @@ class AsistenciaViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch(Dispatchers.IO) { File(ruta).delete() }
     }
 }
-
-
-
-
-

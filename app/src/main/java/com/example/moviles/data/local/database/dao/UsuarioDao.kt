@@ -21,4 +21,10 @@ interface UsuarioDao {
 
     @Update
     suspend fun actualizarUsuario(usuario: UsuarioEntity)
+
+    @Query("SELECT * FROM usuarios ORDER BY id DESC")
+    fun obtenerTodosLosUsuarios(): Flow<List<UsuarioEntity>>
+
+    @Query("DELETE FROM usuarios WHERE id = :id")
+    suspend fun eliminarUsuarioPorId(id: Int)
 }
