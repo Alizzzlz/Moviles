@@ -85,6 +85,20 @@ object Validadores {
         }
     }
 
+    /** Convierte el número ingresado a formato visual estándar: "+56 9 XXXX XXXX" */
+    fun formatearTelefono(telefono: String): String {
+        val digitos = telefono.filter { it.isDigit() }
+        return when {
+            digitos.length == 9 && digitos.startsWith("9") -> {
+                "+56 ${digitos[0]} ${digitos.substring(1, 5)} ${digitos.substring(5)}"
+            }
+            digitos.length == 11 && digitos.startsWith("569") -> {
+                "+56 ${digitos[2]} ${digitos.substring(3, 7)} ${digitos.substring(7)}"
+            }
+            else -> telefono.trim()
+        }
+    }
+
     fun codigoError(codigo: String): String? = when {
         codigo.isBlank() -> "Ingresa el código"
         codigo.length != 6 || !codigo.all { it.isDigit() } -> "El código tiene 6 dígitos"
