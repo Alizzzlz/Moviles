@@ -75,7 +75,7 @@ fun SplashView(
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.gato_bigote),
+                painter = painterResource(id = R.drawable.logo_app),
                 contentDescription = "Logo",
                 modifier = Modifier
                     .size(120.dp)
@@ -85,7 +85,7 @@ fun SplashView(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Obra Check",
+                text = "OBRA CHECK",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground

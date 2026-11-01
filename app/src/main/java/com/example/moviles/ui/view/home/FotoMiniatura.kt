@@ -1,9 +1,11 @@
 package com.example.moviles.ui.view.home
 
+import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
@@ -13,20 +15,44 @@ import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.MaterialTheme
-import com.example.moviles.util.CameraHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 
-/** Muestra una foto guardada en el teléfono. La decodifica en segundo plano para no trabar la pantalla. */
+/** Muestra una foto guardada en el teléfono decodificándola en segundo plano. */
 @Composable
 fun FotoMiniatura(
     ruta: String,
     modifier: Modifier = Modifier,
     anchoMax: Int = 300
 ) {
-    val bitmap by produceState<ImageBitmap?>(initialValue = null, ruta) {
-        value = withContext(Dispatchers.IO) { CameraHelper.cargarBitmap(ruta, anchoMax)?.asImageBitmap() }
+    val bitmap by produceState<ImageBitmap?>(initialValue = null, key1 = ruta) {
+        value = withContext(Dispatchers.IO) {
+            try {
+                val archivo = File(ruta)
+                if (!archivo.exists()) return@withContext null
+
+                // Decodificar dimensiones primero para escalar inteligentemente
+                val opciones = BitmapFactory.Options().apply {
+                    inJustDecodeBounds = true
+                }
+                BitmapFactory.decodeFile(ruta, opciones)
+
+                // Calcular el factor de escala en base al ancho deseado
+                var scale = 1
+                while (opciones.outWidth / scale / 2 >= anchoMax) {
+                    scale *= 2
+                }
+
+                // Decodificar el bitmap optimizado
+                val opcionesFinales = BitmapFactory.Options().apply {
+                    inSampleSize = scale
+                }
+                BitmapFactory.decodeFile(ruta, opcionesFinales)?.asImageBitmap()
+            } catch (e: Exception) {
+                null
+            }
+        }
     }
 
     Box(
