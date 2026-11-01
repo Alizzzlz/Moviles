@@ -18,6 +18,10 @@ sealed class Screen(val route: String) {
         fun createRoute(usuarioId: Int) = "home/$usuarioId"
     }
 
+    object AdminHome : Screen("admin_home/{usuarioId}") {
+        fun createRoute(usuarioId: Int) = "admin_home/$usuarioId"
+    }
+
     object Profile : Screen("profile/{usuarioId}") {
         fun createRoute(usuarioId: Int) = "profile/$usuarioId"
     }

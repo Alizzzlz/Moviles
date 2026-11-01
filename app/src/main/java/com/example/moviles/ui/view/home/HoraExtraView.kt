@@ -2,299 +2,236 @@ package com.example.moviles.ui.view.home
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.MoreTime
-import androidx.compose.material.icons.filled.Timer
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moviles.ui.theme.MarkTheme
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviles.viewmodel.CupoHoraExtra
+import com.example.moviles.viewmodel.HoraExtraViewModel
 
-data class RegistroHoraExtra(
-    val id: Int,
-    val fecha: String,
-    val horaInicio: String,
-    val horaFin: String,
-    val totalHoras: String
-)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HoraExtraView(
-    onVolverAHome: () -> Unit = {}
+    viewModel: HoraExtraViewModel = viewModel(),
+    modifier: Modifier = Modifier
 ) {
-    val listaHorasExtras = listOf(
-        RegistroHoraExtra(1, "24/10/2026", "18:00", "20:30", "2.5 hrs"),
-        RegistroHoraExtra(2, "22/10/2026", "17:30", "19:30", "2.0 hrs"),
-        RegistroHoraExtra(3, "19/10/2026", "18:00", "21:00", "3.0 hrs"),
-        RegistroHoraExtra(4, "15/10/2026", "17:00", "19:00", "2.0 hrs")
-    )
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Horas Extras",
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = onVolverAHome) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver a Home",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
+    LaunchedEffect(state.mensaje) {
+        state.mensaje?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.mensajeConsumido()
+        }
+    }
 
+    Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp),
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            item { Spacer(modifier = Modifier.height(8.dp)) }
-
+            // --- TARJETA DE RESUMEN DEL MES ---
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     shape = RoundedCornerShape(16.dp),
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
                 ) {
                     Row(
                         modifier = Modifier
-                            .padding(20.dp)
-                            .fillMaxWidth(),
+                            .fillMaxWidth()
+                            .padding(20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
                             Text(
-                                text = "Acumulado del Mes",
-                                fontSize = 14.sp,
-                                color = MaterialTheme.colorScheme.secondary
+                                text = "Acumuladas este mes",
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                             )
-                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "9.5 Horas",
+                                text = "${state.horasAprobadasMes} Horas",
                                 fontSize = 26.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
 
                         Box(
                             modifier = Modifier
-                                .size(50.dp)
+                                .size(48.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                                .background(MaterialTheme.colorScheme.primary),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Timer,
+                                imageVector = Icons.Default.AccessTime,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(28.dp)
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
                 }
             }
 
-            item {
-                Button(
-                    onClick = { },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Registrar Nueva Hora Extra",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-
+            // --- ENCABEZADO DE SECCIÓN ---
             item {
                 Text(
-                    text = "Registros Recientes",
+                    text = "Cupos Disponibles en Obra",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 8.dp)
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
-            items(listaHorasExtras) { registro ->
-                ItemHoraExtraCard(registro = registro)
+            // --- LISTA DE CUPOS ---
+            if (state.cuposDisponibles.isEmpty()) {
+                item {
+                    Text(
+                        text = "No hay cupos de horas extras habilitados por el momento.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+            } else {
+                items(state.cuposDisponibles) { cupo ->
+                    TarjetaCupoHoraExtra(
+                        cupo = cupo,
+                        onSolicitar = { viewModel.solicitarCupo(cupo.id) },
+                        onCancelar = { viewModel.cancelarSolicitud(cupo.id) }
+                    )
+                }
             }
-
-            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
 @Composable
-fun ItemHoraExtraCard(registro: RegistroHoraExtra) {
+private fun TarjetaCupoHoraExtra(
+    cupo: CupoHoraExtra,
+    onSolicitar: () -> Unit,
+    onCancelar: () -> Unit
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        shape = RoundedCornerShape(14.dp),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.MoreTime,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Icon(
+                        imageVector = Icons.Default.Event,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = registro.fecha,
-                        fontSize = 16.sp,
+                        text = cupo.fecha,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
+                        fontSize = 15.sp
                     )
                 }
 
-                Text(
-                    text = registro.totalHoras,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier
-                        .background(
-                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                )
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = "+${cupo.horas} hrs",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Text(
-                        text = "Hora Inicio",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = registro.horaInicio,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+            Text(
+                text = "Horario: ${cupo.horario}",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Text(
+                text = "Tarea: ${cupo.motivo}",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            when (cupo.estado) {
+                "Pendiente" -> OutlinedButton(
+                    onClick = onCancelar,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.tertiary
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(Icons.Default.HourglassTop, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("PENDIENTE DE APROBACIÓN (CANCELAR)")
                 }
 
-                Column(horizontalAlignment = Alignment.End) {
-                    Text(
-                        text = "Hora Término",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                    Text(
-                        text = registro.horaFin,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                "Aprobada" -> Button(
+                    onClick = { },
+                    enabled = false,
+                    colors = ButtonDefaults.buttonColors(
+                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("CUPO APROBADO")
+                }
+
+                else -> Button(
+                    onClick = onSolicitar,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("POSTULAR A HORAS EXTRAS", fontWeight = FontWeight.Bold)
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, name = "Modo Claro")
-@Composable
-private fun HoraExtraViewLightPreview() {
-    MarkTheme(darkTheme = false) {
-        HoraExtraView()
-    }
-}
-
-@Preview(showBackground = true, name = "Modo Oscuro")
-@Composable
-private fun HoraExtraViewDarkPreview() {
-    MarkTheme(darkTheme = true) {
-        HoraExtraView()
     }
 }

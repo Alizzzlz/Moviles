@@ -33,6 +33,32 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    init {
+        // Precargar cuenta de Administrador de prueba si no existe
+        crearUsuarioAdminSiNoExiste()
+    }
+
+    private fun crearUsuarioAdminSiNoExiste() {
+        viewModelScope.launch(Dispatchers.IO) {
+            val dao = AppDatabase.getDatabase(getApplication()).usuarioDao()
+            val adminExistente = dao.obtenerUsuarioPorEmail("admin@mark.cl")
+            if (adminExistente == null) {
+                dao.insertarUsuario(
+                    UsuarioEntity(
+                        nombres = "Jefe",
+                        apellidos = "de Obra",
+                        rut = "11.111.111-1",
+                        email = "admin@mark.cl",
+                        password = "admin123",
+                        cargo = "Administrador General",
+                        rol = "ADMIN",
+                        obra = "Costanera Edificio B"
+                    )
+                )
+            }
+        }
+    }
+
     fun onEmailChanged(newEmail: String) {
         val isValidFormat = newEmail.contains("@") && newEmail.contains(".")
         _uiState.value = _uiState.value.copy(
@@ -57,8 +83,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
-    // 👈 1. Login ahora devuelve Int (usuarioId)
-    fun login(onSuccess: (Int) -> Unit) {
+    fun login(onSuccess: (Int, String) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
             val emailActual = _uiState.value.email.trim()
             val passwordActual = _uiState.value.password.trim()
@@ -102,8 +127,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         errorMessage = null,
                         passwordErrorMessage = null
                     )
-                    // Retornar ID int del usuario
-                    onSuccess(usuarioEncontrado.id)
+                    // Retorna ID y el Rol del usuario ("OPERARIO" o "ADMIN")
+                    onSuccess(usuarioEncontrado.id, usuarioEncontrado.rol)
                 }
             } else {
                 withContext(Dispatchers.Main) {
@@ -119,7 +144,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // 👈 2. Register ahora devuelve Int (usuarioId recién insertado)
     fun register(
         nombres: String,
         apellidos: String,
@@ -166,7 +190,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 rut = rutTrimmed,
                 email = emailTrimmed,
                 password = passwordTrimmed,
-                cargo = "Operador"
+                cargo = "Operador",
+                rol = "OPERARIO",
+                obra = "Costanera Edificio B"
             )
 
             dao.insertarUsuario(nuevoUsuario)

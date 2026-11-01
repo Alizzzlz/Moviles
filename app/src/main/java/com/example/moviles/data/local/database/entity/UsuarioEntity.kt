@@ -12,7 +12,9 @@ data class UsuarioEntity(
     val rut: String,
     val email: String,
     val password: String,
-    val cargo: String
+    val cargo: String,
+    val rol: String = "OPERARIO",
+    val obra: String = "Sin Obra Asignada"
 ){
     val nombreCompleto: String
         get() = "$nombres $apellidos".trim()

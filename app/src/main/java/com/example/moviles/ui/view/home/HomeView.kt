@@ -1,7 +1,6 @@
 package com.example.moviles.ui.view.home
 
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -11,6 +10,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -18,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +35,7 @@ import com.example.moviles.ui.viewmodel.AsistenciaUiState
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
 import com.example.moviles.viewmodel.PerfilViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -61,9 +62,12 @@ fun HomeView(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val perfil by perfilViewModel.perfil.collectAsStateWithLifecycle()
 
-    var itemSeleccionado by rememberSaveable { mutableStateOf(0) }
     var mostrarAvisosDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // --- CONFIGURACIÓN DE HORIZONTAL PAGER ---
+    val pagerState = rememberPagerState(pageCount = { 3 })
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(state.mensaje) {
         state.mensaje?.let {
@@ -74,7 +78,7 @@ fun HomeView(
 
     val navItems = listOf(
         NavItem("Inicio", Icons.Default.Home),
-        NavItem("Historial", Icons.Default.DateRange),
+        NavItem("Horas Extras", Icons.Default.MoreTime),
         NavItem("Mi Perfil", Icons.Default.Person)
     )
 
@@ -128,8 +132,12 @@ fun HomeView(
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 navItems.forEachIndexed { index, item ->
                     NavigationBarItem(
-                        selected = itemSeleccionado == index,
-                        onClick = { itemSeleccionado = index },
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.animateScrollToPage(index)
+                            }
+                        },
                         icon = { Icon(item.icono, contentDescription = item.titulo) },
                         label = { Text(item.titulo) },
                         colors = NavigationBarItemDefaults.colors(
@@ -144,20 +152,20 @@ fun HomeView(
             }
         }
     ) { paddingValues ->
-        Crossfade(
-            targetState = itemSeleccionado,
-            animationSpec = tween(300),
-            modifier = Modifier.padding(paddingValues),
-            label = "pestañas"
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.padding(paddingValues)
         ) { pestana ->
             when (pestana) {
                 0 -> HomeContent(
                     nombre = perfil.nombre.ifBlank { nombreUsuario },
                     state = state,
                     onIniciarMarcaje = viewModel::iniciarMarcaje,
-                    onNavegarAHorasExtras = onNavegarAHorasExtras
+                    onNavegarAHorasExtras = {
+                        coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                    }
                 )
-                1 -> HistorialContent(historial = state.historial)
+                1 -> HoraExtraView()
                 else -> ProfileView(
                     nombre = perfil.nombre.ifBlank { nombreUsuario },
                     rut = perfil.rut,
@@ -213,7 +221,6 @@ fun HomeContent(
     onNavegarAHorasExtras: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // --- ESTADO PARA LA HORA Y FECHA DINÁMICA ---
     var fechaActual by remember { mutableStateOf("") }
     var horaActual by remember { mutableStateOf("") }
 
@@ -224,7 +231,7 @@ fun HomeContent(
             val now = Date()
             fechaActual = formatoFecha.format(now).replaceFirstChar { it.uppercase() }
             horaActual = formatoHora.format(now)
-            delay(1000L) // Actualiza el reloj cada segundo
+            delay(1000L)
         }
     }
 
@@ -282,7 +289,7 @@ fun HomeContent(
             }
         }
 
-        // --- TARJETA DE ASISTENCIA CON DÍA/HORA EN VIVO Y MARCAJE ---
+        // --- TARJETA DE ASISTENCIA (4 HITOS) ---
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -291,7 +298,7 @@ fun HomeContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    // Encabezado de la tarjeta con la fecha actual
+                    // Encabezado con fecha y hora en vivo
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -312,7 +319,6 @@ fun HomeContent(
                             )
                         }
 
-                        // Muestra la Hora Servidor / Hora en vivo
                         Surface(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(12.dp)
@@ -340,26 +346,44 @@ fun HomeContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Horas registradas de Entrada y Salida
+                    // Rejilla de horas para las 4 marcas de la jornada
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Entrada", color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
+                            Text("Entrada", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
                             Text(
                                 text = state.horaEntrada,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 24.sp,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Column {
+                            Text("In. Colación", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                            Text(
+                                text = state.horaInicioColacion,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                        Column {
+                            Text("Fin Colación", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                            Text(
+                                text = state.horaFinColacion,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Salida", color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
+                            Text("Salida", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
                             Text(
                                 text = state.horaSalida,
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 24.sp,
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -367,10 +391,11 @@ fun HomeContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Botón dinámico de 5 estados
                     AnimatedContent(
                         targetState = state.estadoMarcaje,
                         transitionSpec = { fadeIn(tween(350)) togetherWith fadeOut(tween(200)) },
-                        label = "boton_marcaje"
+                        label = "boton_marcaje_etapas"
                     ) { estado ->
                         when (estado) {
                             0 -> Button(
@@ -382,11 +407,11 @@ fun HomeContent(
                             ) {
                                 Icon(Icons.Default.CheckCircle, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("MARCAR ENTRADA", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text("MARCAR ENTRADA", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                             }
 
                             1 -> Button(
-                                onClick = { onIniciarMarcaje("Salida") },
+                                onClick = { onIniciarMarcaje("Inicio Colación") },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = MaterialTheme.colorScheme.tertiary
                                 ),
@@ -395,9 +420,39 @@ fun HomeContent(
                                     .height(50.dp),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
+                                Icon(Icons.Default.Restaurant, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("INICIAR COLACIÓN", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            }
+
+                            2 -> Button(
+                                onClick = { onIniciarMarcaje("Fin Colación") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondary
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Icon(Icons.Default.Work, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("FIN COLACIÓN", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            }
+
+                            3 -> Button(
+                                onClick = { onIniciarMarcaje("Salida") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(50.dp),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
                                 Icon(Icons.Default.ExitToApp, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("MARCAR SALIDA", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                                Text("MARCAR SALIDA", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                             }
 
                             else -> OutlinedButton(
@@ -410,7 +465,7 @@ fun HomeContent(
                             ) {
                                 Icon(Icons.Default.TaskAlt, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("JORNADA REGISTRADA", fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                                Text("JORNADA COMPLETADA", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                             }
                         }
                     }
@@ -418,7 +473,7 @@ fun HomeContent(
             }
         }
 
-        // --- NUEVO APARTADO DIRECTO PARA HORAS EXTRAS ---
+        // --- BARRITA DESTACADA PARA HORAS EXTRAS ---
         item {
             Card(
                 modifier = Modifier
@@ -481,7 +536,7 @@ fun HomeContent(
             }
         }
 
-        // Tarjetas de Resumen Adicional
+        // Tarjetas de Resumen
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
