@@ -20,9 +20,11 @@ class UserPreferences(private val context: Context) {
 
         private val KEY_USER_NAME = stringPreferencesKey("user_name")
         private val KEY_USER_RUT = stringPreferencesKey("user_rut")
-
         private val KEY_USER_EMAIL = stringPreferencesKey("user_email")
         private val KEY_DARK_THEME = booleanPreferencesKey("is_dark_theme")
+        private val KEY_USER_PHONE = stringPreferencesKey("user_phone")
+
+        private val KEY_USER_IMAGE_URI = stringPreferencesKey("user_image_uri")
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { prefs ->
@@ -36,13 +38,20 @@ class UserPreferences(private val context: Context) {
     val userRut: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[KEY_USER_RUT] ?: ""
     }
-
     val userEmail: Flow<String> = context.dataStore.data.map { prefs ->
         prefs[KEY_USER_EMAIL] ?: ""
     }
 
     val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { prefs ->
         prefs[KEY_DARK_THEME] ?: false
+    }
+
+    val userPhone: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[KEY_USER_PHONE] ?: ""
+    }
+
+    val userImageUri: Flow<String?> = context.dataStore.data.map { prefs ->
+        prefs[KEY_USER_IMAGE_URI]
     }
 
     suspend fun saveAuthToken(token: String, rut: String,name: String = "",
@@ -57,10 +66,10 @@ class UserPreferences(private val context: Context) {
         }
     }
 
-    suspend fun saveProfile(name: String, rut: String) {
+    suspend fun saveContactInfo(email: String, phone: String) {
         context.dataStore.edit { prefs ->
-            prefs[KEY_USER_NAME] = name
-            prefs[KEY_USER_RUT] = rut
+            prefs[KEY_USER_EMAIL] = email
+            prefs[KEY_USER_PHONE] = phone
         }
     }
 
@@ -76,6 +85,12 @@ class UserPreferences(private val context: Context) {
             prefs.remove(KEY_USER_RUT)
             prefs.remove(KEY_USER_NAME)
             prefs.remove(KEY_USER_EMAIL)
+        }
+    }
+
+    suspend fun saveProfileImageUri(uri: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_USER_IMAGE_URI] = uri
         }
     }
 }

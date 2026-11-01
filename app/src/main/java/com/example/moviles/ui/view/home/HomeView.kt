@@ -8,11 +8,13 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,13 +34,17 @@ import com.example.moviles.ui.view.profile.ProfileView
 import com.example.moviles.ui.viewmodel.AsistenciaUiState
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
 import com.example.moviles.viewmodel.PerfilViewModel
+import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 data class NavItem(val titulo: String, val icono: ImageVector)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeView(
-    usuarioId: Int, // Se agrega usuarioId para consultar dinámicamente el perfil en Room
+    usuarioId: Int,
     nombreUsuario: String = "Usuario",
     viewModel: AsistenciaViewModel = viewModel(),
     perfilViewModel: PerfilViewModel = viewModel(),
@@ -48,21 +54,17 @@ fun HomeView(
     onNavegarAAjustes: () -> Unit = {},
     onCerrarSesion: () -> Unit = {}
 ) {
-    // Al abrir HomeView, notificamos a PerfilViewModel cuál es el usuario activo
     LaunchedEffect(usuarioId) {
         perfilViewModel.cargarPerfil(usuarioId)
     }
 
-    // Estado que viene de Room (a través del ViewModel). Se actualiza solo.
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val perfil by perfilViewModel.perfil.collectAsStateWithLifecycle()
 
-    // rememberSaveable: la pestaña elegida sobrevive a rotaciones
     var itemSeleccionado by rememberSaveable { mutableStateOf(0) }
     var mostrarAvisosDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Cuando el ViewModel trae un mensaje ("Entrada registrada"), lo mostramos y lo consumimos
     LaunchedEffect(state.mensaje) {
         state.mensaje?.let {
             snackbarHostState.showSnackbar(it)
@@ -142,7 +144,6 @@ fun HomeView(
             }
         }
     ) { paddingValues ->
-        // Crossfade: transición suave al cambiar de pestaña
         Crossfade(
             targetState = itemSeleccionado,
             animationSpec = tween(300),
@@ -169,7 +170,6 @@ fun HomeView(
         }
     }
 
-    // Diálogo de avisos
     if (mostrarAvisosDialog) {
         AlertDialog(
             onDismissRequest = { mostrarAvisosDialog = false },
@@ -192,7 +192,6 @@ fun HomeView(
         )
     }
 
-    // Diálogo de marcaje (GPS + cámara): aparece mientras exista un borrador en el ViewModel
     state.draft?.let { borrador ->
         MarcajeDialog(
             draft = borrador,
@@ -214,6 +213,21 @@ fun HomeContent(
     onNavegarAHorasExtras: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // --- ESTADO PARA LA HORA Y FECHA DINÁMICA ---
+    var fechaActual by remember { mutableStateOf("") }
+    var horaActual by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        val formatoFecha = SimpleDateFormat("EEEE, d 'de' MMMM", Locale("es", "CL"))
+        val formatoHora = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+        while (true) {
+            val now = Date()
+            fechaActual = formatoFecha.format(now).replaceFirstChar { it.uppercase() }
+            horaActual = formatoHora.format(now)
+            delay(1000L) // Actualiza el reloj cada segundo
+        }
+    }
+
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -268,7 +282,7 @@ fun HomeContent(
             }
         }
 
-        // Tarjeta de Asistencia con botón único dinámico
+        // --- TARJETA DE ASISTENCIA CON DÍA/HORA EN VIVO Y MARCAJE ---
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -277,36 +291,56 @@ fun HomeContent(
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
+                    // Encabezado de la tarjeta con la fecha actual
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = "Asistencia de hoy",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Lock,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
+                        Column {
                             Text(
-                                text = "Hora Servidor",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.Medium
+                                text = "Asistencia de hoy",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
+                            Text(
+                                text = fechaActual.ifBlank { "Cargando fecha..." },
+                                fontSize = 13.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+
+                        // Muestra la Hora Servidor / Hora en vivo
+                        Surface(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = horaActual.ifBlank { "--:--:--" },
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
+                    // Horas registradas de Entrada y Salida
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -314,7 +348,7 @@ fun HomeContent(
                         Column {
                             Text("Entrada", color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
                             Text(
-                                state.horaEntrada,
+                                text = state.horaEntrada,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
@@ -323,7 +357,7 @@ fun HomeContent(
                         Column(horizontalAlignment = Alignment.End) {
                             Text("Salida", color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
                             Text(
-                                state.horaSalida,
+                                text = state.horaSalida,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.Bold
@@ -333,7 +367,6 @@ fun HomeContent(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // AnimatedContent: el botón se desvanece y cambia suavemente entre estados
                     AnimatedContent(
                         targetState = state.estadoMarcaje,
                         transitionSpec = { fadeIn(tween(350)) togetherWith fadeOut(tween(200)) },
@@ -385,7 +418,70 @@ fun HomeContent(
             }
         }
 
-        // Tarjetas de Resumen
+        // --- NUEVO APARTADO DIRECTO PARA HORAS EXTRAS ---
+        item {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavegarAHorasExtras() },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.3f))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreTime,
+                                contentDescription = "Horas Extras",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = "Gestión de Horas Extras",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Text(
+                                text = "Postula y revisa tus cupos aprobados",
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = "Ir a Horas Extras",
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+
+        // Tarjetas de Resumen Adicional
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -412,23 +508,12 @@ fun HomeContent(
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text("12 hrs", fontSize = 24.sp, fontWeight = FontWeight.Bold)
                         Text("Horas Aprobadas", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Button(
-                            onClick = onNavegarAHorasExtras,
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-                        ) {
-                            Icon(Icons.Default.Schedule, contentDescription = null, modifier = Modifier.height(16.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Ver Cupos", fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
                     }
                 }
             }
         }
 
-        // Últimos Marcajes (datos reales de Room)
+        // Últimos Marcajes
         item {
             Text(
                 text = "Últimos Marcajes",

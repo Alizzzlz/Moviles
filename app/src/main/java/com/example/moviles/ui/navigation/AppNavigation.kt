@@ -1,8 +1,13 @@
 package com.example.moviles.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -160,19 +165,55 @@ fun MainNavGraph(navController: NavHostController) {
                     nombre = perfilState.nombre.ifBlank { "Usuario" },
                     rut = perfilState.rut,
                     email = perfilState.email,
+                    telefono = perfilState.telefono,
+                    fotoUri = perfilState.fotoUri,
+                    cargo = perfilState.cargo,
+                    obra = perfilState.obra,
+                    horasMes = perfilState.horasMes,
+                    onSeleccionarFoto = { uri ->
+                        perfilViewModel.guardarFotoPerfil(uri.toString())
+                    },
                     onEditarPerfil = { navController.navigate(Screen.EditProfile.route) },
                     onAjustes = { navController.navigate(Screen.Settings.route) },
                     onCerrarSesion = {
-                        navController.navigate(Screen.Login.route) { popUpTo(0) }
+                        perfilViewModel.cerrarSesion {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
                     }
                 )
             } else {
-                CircularProgressIndicator()
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
         }
 
-        composable(Screen.EditProfile.route) {
-            EditProfileView(onVolver = { navController.popBackStack() })
+        composable(Screen.EditProfile.route) { backStackEntry ->
+            // Buscamos la entrada de la pantalla Profile de forma segura
+            val profileEntry = remember(backStackEntry) {
+                try {
+                    navController.getBackStackEntry(Screen.Profile.route)
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            // Si encontramos la ruta anterior usamos su ViewModel, si no, creamos uno nuevo asociado a EditProfile
+            val perfilViewModel: PerfilViewModel = if (profileEntry != null) {
+                viewModel(profileEntry)
+            } else {
+                viewModel()
+            }
+
+            EditProfileView(
+                viewModel = perfilViewModel,
+                onVolver = { navController.popBackStack() }
+            )
         }
 
         composable(Screen.Settings.route) {
