@@ -85,7 +85,7 @@ fun SplashView(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "OBRA CHECK",
+                text = "MARK",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
