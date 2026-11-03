@@ -58,7 +58,7 @@ fun ProfileView(
     val context = LocalContext.current
 
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
             try {
@@ -87,7 +87,7 @@ fun ProfileView(
         Box(
             modifier = Modifier
                 .size(96.dp)
-                .clickable { launcher.launch("image/*") },
+                .clickable { launcher.launch(arrayOf("image/*")) },
             contentAlignment = Alignment.Center
         ) {
             if (!fotoUri.isNullOrBlank()) {
@@ -365,3 +365,4 @@ private fun DatoPerfil(icon: ImageVector, titulo: String, valor: String) {
         }
     }
 }
+

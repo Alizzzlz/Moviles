@@ -36,6 +36,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 
+
+
+//--Pantalla de bienvenida e introducción al primer uso de la app.//
 // --- Paleta de colores solicitada ---
 val PrimaryBlue = Color(0xFF378DD2)
 val PrimaryDarkBlue = Color(0xFF493261)

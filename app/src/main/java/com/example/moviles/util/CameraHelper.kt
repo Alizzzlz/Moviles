@@ -10,10 +10,12 @@ import java.util.Locale
 
 object CameraHelper {
 
+    /** Crea un archivo vacío en filesDir/fotos/ (coincide con res/xml/file_paths.xml). */
     fun crearArchivoFoto(context: Context): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val storageDir = context.getExternalFilesDir(null)
-        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", storageDir)
+        val carpeta = File(context.filesDir, "fotos")
+        if (!carpeta.exists()) carpeta.mkdirs()
+        return File.createTempFile("JPEG_${timeStamp}_", ".jpg", carpeta)
     }
 
     fun uriDeArchivo(context: Context, file: File): Uri {
@@ -24,3 +26,5 @@ object CameraHelper {
         )
     }
 }
+
+

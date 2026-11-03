@@ -173,6 +173,12 @@ fun HomeView(
                     nombre = perfil.nombre.ifBlank { nombreUsuario },
                     rut = perfil.rut,
                     email = perfil.email,
+                    telefono = perfil.telefono,
+                    fotoUri = perfil.fotoUri,
+                    cargo = perfil.cargo,
+                    obra = perfil.obra,
+                    horasMes = perfil.horasMes,
+                    onSeleccionarFoto = { uri -> perfilViewModel.guardarFotoPerfil(uri.toString()) },
                     onEditarPerfil = onNavegarAEditarPerfil,
                     onAjustes = onNavegarAAjustes,
                     onCerrarSesion = onCerrarSesion
@@ -214,17 +220,6 @@ fun HomeView(
             onCancelar = { viewModel.cancelarMarcaje() }
         )
     }
-}
-
-fun MarcajeDialog(
-    draft: com.example.moviles.ui.viewmodel.MarcajeDraft,
-    onUbicacionObtenida: (Double, Double) -> Unit,
-    onUbicacionError: (String) -> Unit,
-    onReintentarUbicacion: () -> Unit,
-    onFotoTomada: (String) -> Unit,
-    onConfirmar: () -> Unit,
-    onCancelar: () -> Unit
-) {
 }
 
 @Composable
@@ -620,3 +615,7 @@ private fun HomeContentPreview() {
         )
     }
 }
+
+
+
+
