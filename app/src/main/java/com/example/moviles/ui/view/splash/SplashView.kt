@@ -75,7 +75,7 @@ fun SplashView(
             verticalArrangement = Arrangement.Center
         ) {
             Image(
-                painter = painterResource(id = R.drawable.logo_app),
+                painter = painterResource(id = R.drawable.logo_app2),
                 contentDescription = "Logo",
                 modifier = Modifier
                     .size(120.dp)

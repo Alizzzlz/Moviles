@@ -14,7 +14,7 @@ interface UsuarioDao {
     suspend fun insertarUsuario(usuario: UsuarioEntity)
 
     @Query("SELECT * FROM usuarios WHERE id = :id LIMIT 1")
-    fun obtenerUsuarioPorId(id: Int = 1): Flow<UsuarioEntity?>
+    fun obtenerUsuarioPorId(id: Int): Flow<UsuarioEntity?>
 
     @Query("SELECT * FROM usuarios WHERE email = :email LIMIT 1")
     suspend fun obtenerUsuarioPorEmail(email: String): UsuarioEntity?

@@ -1,6 +1,5 @@
 package com.example.moviles.data.local.datastore
 
-import android.R.attr.name
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -94,3 +93,4 @@ class UserPreferences(private val context: Context) {
         }
     }
 }
+

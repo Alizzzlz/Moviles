@@ -145,3 +145,7 @@ class AsistenciaViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch(Dispatchers.IO) { File(ruta).delete() }
     }
 }
+
+
+
+
