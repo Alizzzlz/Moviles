@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -18,11 +19,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import com.example.moviles.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,15 +36,12 @@ import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
 import com.example.moviles.ui.viewmodel.AsistenciaUiState
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
-import com.example.moviles.ui.viewmodel.MarcajeDraft
 import com.example.moviles.viewmodel.PerfilViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-
-
 
 data class NavItem(val titulo: String, val icono: ImageVector)
 
@@ -68,7 +68,6 @@ fun HomeView(
     var mostrarAvisosDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // --- CONFIGURACIÓN DE HORIZONTAL PAGER ---
     val pagerState = rememberPagerState(pageCount = { 3 })
     val coroutineScope = rememberCoroutineScope()
 
@@ -95,26 +94,12 @@ fun HomeView(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Box(
+                        Image(
+                            painter = painterResource(id = R.drawable.logo_horizontal),
+                            contentDescription = "Logo MARK",
                             modifier = Modifier
-                                .size(34.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.primary),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Engineering,
-                                contentDescription = "Logo MARK",
-                                tint = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "MARK",
-                            fontWeight = FontWeight.ExtraBold,
-                            fontSize = 22.sp,
-                            letterSpacing = 1.sp
+                                .size(100.dp)
+
                         )
                     }
                 },
@@ -147,8 +132,8 @@ fun HomeView(
                             selectedIconColor = MaterialTheme.colorScheme.primary,
                             selectedTextColor = MaterialTheme.colorScheme.primary,
                             indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                            unselectedIconColor = MaterialTheme.colorScheme.secondary,
-                            unselectedTextColor = MaterialTheme.colorScheme.secondary
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
                 }
@@ -257,7 +242,7 @@ fun HomeContent(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
             ) {
                 Row(
@@ -286,12 +271,12 @@ fun HomeContent(
                             text = "¡Hola, $nombre!",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
                             text = "Obra: Costanera Edificio B",
                             fontSize = 13.sp,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
                     }
                 }
@@ -361,7 +346,7 @@ fun HomeContent(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Entrada", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                            Text("Entrada", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             Text(
                                 text = state.horaEntrada,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -370,7 +355,7 @@ fun HomeContent(
                             )
                         }
                         Column {
-                            Text("In. Colación", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                            Text("In. Colación", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             Text(
                                 text = state.horaInicioColacion,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -379,7 +364,7 @@ fun HomeContent(
                             )
                         }
                         Column {
-                            Text("Fin Colación", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                            Text("Fin Colación", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             Text(
                                 text = state.horaFinColacion,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -388,7 +373,7 @@ fun HomeContent(
                             )
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Salida", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp)
+                            Text("Salida", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
                             Text(
                                 text = state.horaSalida,
                                 color = MaterialTheme.colorScheme.onSurface,
@@ -409,6 +394,10 @@ fun HomeContent(
                         when (estado) {
                             0 -> Button(
                                 onClick = { onIniciarMarcaje("Entrada") },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
+                                ),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(50.dp),
@@ -422,7 +411,8 @@ fun HomeContent(
                             1 -> Button(
                                 onClick = { onIniciarMarcaje("Inicio Colación") },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.tertiary
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -437,7 +427,8 @@ fun HomeContent(
                             2 -> Button(
                                 onClick = { onIniciarMarcaje("Fin Colación") },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondary
+                                    containerColor = MaterialTheme.colorScheme.secondary,
+                                    contentColor = MaterialTheme.colorScheme.onSecondary
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -452,7 +443,8 @@ fun HomeContent(
                             3 -> Button(
                                 onClick = { onIniciarMarcaje("Salida") },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.error
+                                    containerColor = MaterialTheme.colorScheme.error,
+                                    contentColor = MaterialTheme.colorScheme.onError
                                 ),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -558,8 +550,17 @@ fun HomeContent(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("${state.diasAsistidos}", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                        Text("Días asistidos", fontSize = 14.sp, color = MaterialTheme.colorScheme.secondary)
+                        Text(
+                            text = "${state.diasAsistidos}",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Días asistidos",
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
 
@@ -570,8 +571,17 @@ fun HomeContent(
                     border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("12 hrs", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                        Text("Horas Aprobadas", fontSize = 12.sp, color = MaterialTheme.colorScheme.secondary)
+                        Text(
+                            text = "12 hrs",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Horas Aprobadas",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -591,7 +601,7 @@ fun HomeContent(
             item {
                 Text(
                     "Todavía no hay marcajes. ¡Marca tu entrada!",
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontSize = 14.sp
                 )
             }
@@ -615,7 +625,3 @@ private fun HomeContentPreview() {
         )
     }
 }
-
-
-
-

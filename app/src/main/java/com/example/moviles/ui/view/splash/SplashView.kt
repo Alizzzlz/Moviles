@@ -27,6 +27,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -34,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviles.R
+import com.example.moviles.ui.theme.MarkTheme
 
 private const val DURACION_SPLASH_MS = 3000
 
@@ -41,7 +43,8 @@ private const val DURACION_SPLASH_MS = 3000
 fun SplashView(
     onFinished: () -> Unit = {}
 ) {
-    val rotation = remember { Animatable(-180f) }
+    // Inicia en -360f para dar una vuelta limpia de 360° y quedar derecho (0f)
+    val rotation = remember { Animatable(-360f) }
     val progreso = remember { Animatable(0f) }
 
     val onFinishedActual by rememberUpdatedState(onFinished)
@@ -62,69 +65,90 @@ fun SplashView(
         onFinishedActual()
     }
 
+    val fondoRadial = Brush.radialGradient(
+        colors = listOf(
+            MaterialTheme.colorScheme.background,
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.90f) // Subimos un poco el alpha a 0.90f para mayor intensidad
+        ),
+        radius = 3200f
+    )
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
-            // Usa el color de fondo dinámico según el tema del sistema/app
-            .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+            .background(brush = fondoRadial)
+            .padding(24.dp)
     ) {
+
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .align(Alignment.Center),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logo_app2),
-                contentDescription = "Logo",
+                contentDescription = "Logo MARK",
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(200.dp)
                     .graphicsLayer { rotationZ = rotation.value }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "MARK",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Text(
                 text = "Control de Asistencia",
-                fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f)
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             LinearProgressIndicator(
                 progress = { progreso.value },
                 modifier = Modifier
-                    .fillMaxWidth(0.6f)
+                    .fillMaxWidth(0.55f)
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f)
+                trackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             Text(
-                text = "Cargando...",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                modifier = Modifier.padding(horizontal = 16.dp)
+                text = "Iniciando...",
+                fontSize = 13.sp,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
+
+        Text(
+            text = "MARK v1.0 • Gestión de Obra",
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        )
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Modo Claro")
 @Composable
-private fun SplashViewPreview() {
-    SplashView()
+private fun SplashViewLightPreview() {
+    MarkTheme(darkTheme = false) {
+        SplashView()
+    }
+}
+
+@Preview(showBackground = true, name = "Modo Oscuro")
+@Composable
+private fun SplashViewDarkPreview() {
+    MarkTheme(darkTheme = true) {
+        SplashView()
+    }
 }
