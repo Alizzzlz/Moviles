@@ -10,27 +10,59 @@ import androidx.compose.ui.graphics.Color
 private val EsquemaColorOscuro = darkColorScheme(
     primary = BotonOscuro,
     onPrimary = TextoBotonOscuro,
-    background = FondoOscuro,
-    surface = TarjetaOscura,
-    onBackground = TextoOscuro,
-    onSurface = TextoOscuro,
-    outline = BordeTarjetaOscuro,
+    primaryContainer = ContenedorPrimarioOscuro,
+    onPrimaryContainer = TextoOscuro,
+
+    secondary = BotonTextoOscuro,
+    onSecondary = TextoBotonOscuro,
+    secondaryContainer = SuperficieVarianteOscura,
+    onSecondaryContainer = TextoOscuro,
+
     tertiary = BotonTextoOscuro,
-    secondary = BotonTextoSecundarioOscuro,
-    error = ColorError
+    onTertiary = TextoBotonOscuro,
+
+    background = FondoOscuro,
+    onBackground = TextoOscuro,
+
+    surface = TarjetaOscura,
+    onSurface = TextoOscuro,
+    surfaceVariant = SuperficieVarianteOscura,
+    onSurfaceVariant = BotonTextoSecundarioOscuro,
+
+    outline = BordeTarjetaOscuro,
+    outlineVariant = BordeTarjetaOscuro,
+
+    error = ColorError,
+    onError = Color.White
 )
 
 private val EsquemaColorClaro = lightColorScheme(
     primary = BotonClaro,
     onPrimary = Color.White,
-    background = FondoClaro,
-    surface = CasillaClara,
-    onBackground = TextoClaro,
-    onSurface = TextoClaro,
-    outline = BordeTarjetaClaro,
+    primaryContainer = ContenedorPrimarioClaro,
+    onPrimaryContainer = TextoClaro,
+
+    secondary = BotonTextoClaro,
+    onSecondary = Color.White,
+    secondaryContainer = SuperficieVarianteClara,
+    onSecondaryContainer = TextoClaro,
+
     tertiary = BotonTextoClaro,
-    secondary = BotonTextoSecundarioClaro,
-    error = ColorError
+    onTertiary = Color.White,
+
+    background = FondoClaro,
+    onBackground = TextoClaro,
+
+    surface = CasillaClara,
+    onSurface = TextoClaro,
+    surfaceVariant = SuperficieVarianteClara,
+    onSurfaceVariant = TextoSecundarioClaro,
+
+    outline = BordeTarjetaClaro,
+    outlineVariant = BordeTarjetaClaro,
+
+    error = ColorError,
+    onError = Color.White
 )
 
 @Composable

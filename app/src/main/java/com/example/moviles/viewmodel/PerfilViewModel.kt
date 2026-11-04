@@ -28,7 +28,7 @@ data class PerfilUiState(
     val cargo: String = "Maestro Mayor",
     val obra: String = "Obra Central",
     val horasMes: String = "14.5 hrs",
-    val temaOscuro: Boolean = false
+    val temaOscuro: Boolean? = null
 )
 
 class PerfilViewModel(application: Application) : AndroidViewModel(application) {

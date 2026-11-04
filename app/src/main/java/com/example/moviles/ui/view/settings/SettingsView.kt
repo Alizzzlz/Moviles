@@ -1,17 +1,18 @@
 package com.example.moviles.ui.view.settings
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviles.viewmodel.PerfilViewModel
 
@@ -21,7 +22,7 @@ fun SettingsView(
     viewModel: PerfilViewModel = viewModel(),
     onVolver: () -> Unit = {}
 ) {
-    val perfil by viewModel.perfil.collectAsState()
+    val perfil by viewModel.perfil.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -53,7 +54,7 @@ fun SettingsView(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Tema oscuro", fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text("Cambiar tema", fontSize = 16.sp, fontWeight = FontWeight.Medium)
                     Text(
                         "Se guarda en el teléfono",
                         fontSize = 13.sp,
@@ -61,7 +62,7 @@ fun SettingsView(
                     )
                 }
                 Switch(
-                    checked = perfil.temaOscuro,
+                    checked = perfil.temaOscuro ?: isSystemInDarkTheme(),
                     onCheckedChange = { viewModel.cambiarTemaOscuro(it) }
                 )
             }

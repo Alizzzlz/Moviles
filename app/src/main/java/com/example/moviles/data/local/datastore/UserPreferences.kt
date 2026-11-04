@@ -41,8 +41,8 @@ class UserPreferences(private val context: Context) {
         prefs[KEY_USER_EMAIL] ?: ""
     }
 
-    val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { prefs ->
-        prefs[KEY_DARK_THEME] ?: false
+    val isDarkTheme: Flow<Boolean?> = context.dataStore.data.map { prefs ->
+        prefs[KEY_DARK_THEME]
     }
 
     val userPhone: Flow<String> = context.dataStore.data.map { prefs ->

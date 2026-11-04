@@ -22,16 +22,15 @@ class MainActivity : ComponentActivity() {
             val perfilViewModel: PerfilViewModel = viewModel()
             val perfilState by perfilViewModel.perfil.collectAsStateWithLifecycle()
 
-            val usarTemaOscuro = if (perfilState.cargado){
-                perfilState.temaOscuro
-            } else {
-                isSystemInDarkTheme()
-            }
+            val temaDelSistema = isSystemInDarkTheme()
 
-            MarkTheme(darkTheme = usarTemaOscuro) {
+            // Si perfilState.temaOscuro es true/false se usa ese valor;
+            // si es null (no se ha configurado) o el perfil no ha cargado, usa temaDelSistema.
+            val esTemaOscuro = perfilState.temaOscuro ?: temaDelSistema
+
+            MarkTheme(darkTheme = esTemaOscuro) {
                 val navController = rememberNavController()
                 MainNavGraph(navController = navController)
-
             }
         }
     }
