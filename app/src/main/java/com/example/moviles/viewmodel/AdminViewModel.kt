@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.database.entity.CupoHoraExtraEntity
+import com.example.moviles.data.local.database.entity.SolicitudHoraExtraEntity
 import com.example.moviles.data.local.entity.UsuarioEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,11 +18,16 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     private val db = AppDatabase.getDatabase(application)
     private val usuarioDao = db.usuarioDao()
     private val horaExtraDao = db.horaExtraDao()
+    private val solicitudDao = db.solicitudHoraExtraDao()
 
     val usuarios: StateFlow<List<UsuarioEntity>> = usuarioDao.obtenerTodosLosUsuarios()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val cuposPublicados: StateFlow<List<CupoHoraExtraEntity>> = horaExtraDao.obtenerTodosLosCupos()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    // Escucha directa y reactiva de las solicitudes persistidas en Room
+    val solicitudesHE: StateFlow<List<SolicitudHoraExtraEntity>> = solicitudDao.obtenerTodasLasSolicitudes()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun publicarCupo(tarea: String, horasStr: String, cuposStr: String, fecha: String) {
@@ -43,13 +49,13 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
 
     fun aprobarSolicitud(cupoId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Lógica para descontar cupo disponible y notificar al usuario
+            solicitudDao.actualizarEstado(cupoId, "Aprobada")
         }
     }
 
     fun rechazarSolicitud(cupoId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
-            // Lógica para liberar postulación
+            solicitudDao.actualizarEstado(cupoId, "Rechazada")
         }
     }
 
@@ -62,6 +68,7 @@ class AdminViewModel(application: Application) : AndroidViewModel(application) {
     fun eliminarCupo(cupoId: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             horaExtraDao.eliminarCupo(cupoId)
+            solicitudDao.eliminarPorCupoId(cupoId)
         }
     }
 }
