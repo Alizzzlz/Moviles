@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.example.moviles.data.local.datastore.UserPreferences
+import kotlinx.coroutines.launch
 
 @Composable
 fun ProfileView(
@@ -52,17 +56,15 @@ fun ProfileView(
     onCerrarSesion: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
-
-    // En ProfileView.kt, actualizamos el launcher del selector de imágenes:
     val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
+    val scope = rememberCoroutineScope()
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
             try {
-                // Concedemos permiso de lectura permanente a la URI de la imagen elegida
                 context.contentResolver.takePersistableUriPermission(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -315,7 +317,12 @@ fun ProfileView(
         Spacer(modifier = Modifier.height(10.dp))
 
         TextButton(
-            onClick = onCerrarSesion,
+            onClick = {
+                scope.launch {
+                    userPreferences.clearSession()
+                    onCerrarSesion()
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(
@@ -365,4 +372,3 @@ private fun DatoPerfil(icon: ImageVector, titulo: String, valor: String) {
         }
     }
 }
-

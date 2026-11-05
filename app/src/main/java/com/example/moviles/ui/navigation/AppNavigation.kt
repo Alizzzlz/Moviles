@@ -32,9 +32,25 @@ fun MainNavGraph(navController: NavHostController) {
     ) {
         // --- SPLASH ---
         composable(Screen.Splash.route) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val userPreferences = remember { com.example.moviles.data.local.datastore.UserPreferences(context) }
+            val isLoggedIn by userPreferences.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
+            val userRole by userPreferences.userRole.collectAsStateWithLifecycle(initialValue = "")
+            val userId by userPreferences.userId.collectAsStateWithLifecycle(initialValue = -1)
+
             SplashView(
                 onFinished = {
-                    navController.navigate(Screen.Login.route) {
+                    val destination = if (isLoggedIn && userId != -1) {
+                        if (userRole == "ADMIN") {
+                            Screen.AdminHome.createRoute(userId)
+                        } else {
+                            Screen.Home.createRoute(userId)
+                        }
+                    } else {
+                        Screen.Login.route
+                    }
+
+                    navController.navigate(destination) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }

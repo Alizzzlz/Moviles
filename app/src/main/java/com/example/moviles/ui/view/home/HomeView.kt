@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviles.data.local.datastore.UserPreferences
 import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
 import com.example.moviles.ui.viewmodel.AsistenciaUiState
@@ -62,6 +64,8 @@ fun HomeView(
         perfilViewModel.cargarPerfil(usuarioId)
     }
 
+    val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val perfil by perfilViewModel.perfil.collectAsStateWithLifecycle()
 
@@ -97,9 +101,7 @@ fun HomeView(
                         Image(
                             painter = painterResource(id = R.drawable.logo_horizontal),
                             contentDescription = "Logo MARK",
-                            modifier = Modifier
-                                .size(100.dp)
-
+                            modifier = Modifier.size(100.dp)
                         )
                     }
                 },
@@ -166,7 +168,12 @@ fun HomeView(
                     onSeleccionarFoto = { uri -> perfilViewModel.guardarFotoPerfil(uri.toString()) },
                     onEditarPerfil = onNavegarAEditarPerfil,
                     onAjustes = onNavegarAAjustes,
-                    onCerrarSesion = onCerrarSesion
+                    onCerrarSesion = {
+                        coroutineScope.launch {
+                            userPreferences.clearSession()
+                            onCerrarSesion()
+                        }
+                    }
                 )
             }
         }
