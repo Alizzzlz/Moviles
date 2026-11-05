@@ -5,9 +5,11 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "obra_check_prefs")
@@ -24,6 +26,10 @@ class UserPreferences(private val context: Context) {
         private val KEY_USER_PHONE = stringPreferencesKey("user_phone")
 
         private val KEY_USER_IMAGE_URI = stringPreferencesKey("user_image_uri")
+
+        // Sesión persistente: quién inició sesión y con qué rol
+        private val KEY_SESSION_USER_ID = intPreferencesKey("session_user_id")
+        private val KEY_SESSION_ROL = stringPreferencesKey("session_rol")
     }
 
     val authToken: Flow<String?> = context.dataStore.data.map { prefs ->
@@ -65,6 +71,22 @@ class UserPreferences(private val context: Context) {
         }
     }
 
+    /** Recuerda al usuario que inició sesión (se llama al hacer login o registrarse). */
+    suspend fun saveSession(usuarioId: Int, rol: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_SESSION_USER_ID] = usuarioId
+            prefs[KEY_SESSION_ROL] = rol
+        }
+    }
+
+    /** Devuelve (id, rol) del usuario con sesión activa, o null si no hay sesión. */
+    suspend fun getSession(): Pair<Int, String>? {
+        val prefs = context.dataStore.data.first()
+        val id = prefs[KEY_SESSION_USER_ID] ?: return null
+        if (prefs[KEY_TOKEN].isNullOrBlank()) return null
+        return id to (prefs[KEY_SESSION_ROL] ?: "OPERARIO")
+    }
+
     suspend fun saveContactInfo(email: String, phone: String) {
         context.dataStore.edit { prefs ->
             prefs[KEY_USER_EMAIL] = email
@@ -84,6 +106,8 @@ class UserPreferences(private val context: Context) {
             prefs.remove(KEY_USER_RUT)
             prefs.remove(KEY_USER_NAME)
             prefs.remove(KEY_USER_EMAIL)
+            prefs.remove(KEY_SESSION_USER_ID)
+            prefs.remove(KEY_SESSION_ROL)
         }
     }
 

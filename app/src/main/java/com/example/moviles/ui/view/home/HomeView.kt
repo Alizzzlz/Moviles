@@ -1,5 +1,6 @@
 package com.example.moviles.ui.view.home
 
+
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -32,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviles.ui.componentes.EstadoRedBanner
 import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
 import com.example.moviles.ui.viewmodel.AsistenciaUiState
@@ -140,34 +142,37 @@ fun HomeView(
             }
         }
     ) { paddingValues ->
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.padding(paddingValues)
-        ) { pestana ->
-            when (pestana) {
-                0 -> HomeContent(
-                    nombre = perfil.nombre.ifBlank { nombreUsuario },
-                    state = state,
-                    onIniciarMarcaje = viewModel::iniciarMarcaje,
-                    onNavegarAHorasExtras = {
-                        coroutineScope.launch { pagerState.animateScrollToPage(1) }
-                    }
-                )
-                1 -> HoraExtraView()
-                else -> ProfileView(
-                    nombre = perfil.nombre.ifBlank { nombreUsuario },
-                    rut = perfil.rut,
-                    email = perfil.email,
-                    telefono = perfil.telefono,
-                    fotoUri = perfil.fotoUri,
-                    cargo = perfil.cargo,
-                    obra = perfil.obra,
-                    horasMes = perfil.horasMes,
-                    onSeleccionarFoto = { uri -> perfilViewModel.guardarFotoPerfil(uri.toString()) },
-                    onEditarPerfil = onNavegarAEditarPerfil,
-                    onAjustes = onNavegarAAjustes,
-                    onCerrarSesion = onCerrarSesion
-                )
+        Column(modifier = Modifier.padding(paddingValues)) {
+            EstadoRedBanner()
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.weight(1f)
+            ) { pestana ->
+                when (pestana) {
+                    0 -> HomeContent(
+                        nombre = perfil.nombre.ifBlank { nombreUsuario },
+                        state = state,
+                        onIniciarMarcaje = viewModel::iniciarMarcaje,
+                        onNavegarAHorasExtras = {
+                            coroutineScope.launch { pagerState.animateScrollToPage(1) }
+                        }
+                    )
+                    1 -> HoraExtraView()
+                    else -> ProfileView(
+                        nombre = perfil.nombre.ifBlank { nombreUsuario },
+                        rut = perfil.rut,
+                        email = perfil.email,
+                        telefono = perfil.telefono,
+                        fotoUri = perfil.fotoUri,
+                        cargo = perfil.cargo,
+                        obra = perfil.obra,
+                        horasMes = perfil.horasMes,
+                        onSeleccionarFoto = { uri -> perfilViewModel.guardarFotoPerfil(uri.toString()) },
+                        onEditarPerfil = onNavegarAEditarPerfil,
+                        onAjustes = onNavegarAAjustes,
+                        onCerrarSesion = onCerrarSesion
+                    )
+                }
             }
         }
     }

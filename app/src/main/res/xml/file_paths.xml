@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android">
-    <external-files-path name="my_images" path="Pictures" />
-    <!--Otorga permiso de lectura y escritura en la carpeta privada externa de imágenes de tu app-->
-    <cache-path name="my_cache_images" path="images" />
+    <!-- CORRECCIÓN DEL ERROR DE CÁMARA:
+         CameraHelper guarda las fotos en context.filesDir/fotos/.
+         Antes esa carpeta NO estaba declarada aquí, por lo que FileProvider lanzaba
+         IllegalArgumentException ("Failed to find configured root") y la app mostraba
+         "No se pudo abrir la cámara". -->
+    <files-path name="fotos" path="fotos/" />
+
+    <external-files-path name="my_images" path="Pictures/" />
+    <cache-path name="my_cache_images" path="images/" />
 </paths>
+
+
 
 
 <!--xml sirve para configurar los permisos de acceso seguro a los archivos locales de tu

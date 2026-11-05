@@ -3,7 +3,9 @@ package com.example.moviles.ui.view.home
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.util.Log
 import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -19,6 +21,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Wifi
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -42,7 +46,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.unit.sp
+import com.example.moviles.ui.componentes.MapaUbicacion
+import com.example.moviles.ui.componentes.rememberEstadoRed
 import com.example.moviles.ui.viewmodel.MarcajeDraft
 import com.example.moviles.util.CameraHelper
 import com.example.moviles.util.LocationHelper
@@ -123,6 +130,8 @@ fun MarcajeDialog(
     }
 
     // ---------- Cámara ----------
+    var denegacionesCamara by remember { mutableIntStateOf(0) }
+
     val camaraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { exito ->
@@ -135,7 +144,8 @@ fun MarcajeDialog(
         rutaFotoPendiente = null
     }
 
-    fun tomarFoto() {
+    /** Crea el archivo y abre la app de cámara. Se llama SOLO cuando el permiso ya está concedido. */
+    fun lanzarCamara() {
         try {
             val archivo = CameraHelper.crearArchivoFoto(context)
             rutaFotoPendiente = archivo.absolutePath
@@ -144,8 +154,14 @@ fun MarcajeDialog(
             rutaFotoPendiente = null
             Toast.makeText(context, "Este teléfono no tiene app de cámara", Toast.LENGTH_SHORT).show()
         } catch (e: Exception) {
+            // Ahora el mensaje incluye el motivo real para poder depurar
             rutaFotoPendiente = null
-            Toast.makeText(context, "No se pudo abrir la cámara", Toast.LENGTH_SHORT).show()
+            Log.e("MarcajeDialog", "Error al abrir la cámara", e)
+            Toast.makeText(
+                context,
+                "No se pudo abrir la cámara: ${e.javaClass.simpleName}",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -158,6 +174,47 @@ fun MarcajeDialog(
             )
         } catch (e: Exception) {
             Toast.makeText(context, "No se pudieron abrir los ajustes", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // CORRECCIÓN: como el Manifest declara el permiso CAMERA, Android EXIGE que esté concedido
+    // antes de abrir la cámara (si no, lanza SecurityException). Hay que pedirlo en ejecución.
+    val permisoCamaraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { concedido ->
+        if (concedido) {
+            lanzarCamara()
+        } else {
+            denegacionesCamara++
+            if (denegacionesCamara >= 2) {
+                Toast.makeText(
+                    context,
+                    "Activa el permiso de Cámara en Ajustes para tomar fotos",
+                    Toast.LENGTH_LONG
+                ).show()
+                abrirAjustesApp()
+            } else {
+                Toast.makeText(context, "Se necesita permiso de cámara para la foto", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun tomarFoto() {
+        val tienePermisoCamara = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        if (tienePermisoCamara) {
+            lanzarCamara()
+        } else {
+            permisoCamaraLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    fun abrirAjustesGps() {
+        try {
+            context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+        } catch (e: Exception) {
+            Toast.makeText(context, "No se pudieron abrir los ajustes de ubicación", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -216,6 +273,9 @@ fun MarcajeDialog(
                             if (denegaciones >= 2 && !LocationHelper.tienePermiso(context)) {
                                 abrirAjustesApp()
                                 onUbicacionError("Activa el permiso de Ubicación en Ajustes y vuelve a intentar.")
+                            } else if (LocationHelper.tienePermiso(context) && !LocationHelper.gpsActivo(context)) {
+                                // Permiso OK pero GPS apagado: lleva al usuario a encenderlo
+                                abrirAjustesGps()
                             } else {
                                 buscarUbicacion()
                             }
@@ -223,6 +283,38 @@ fun MarcajeDialog(
                             Text(if (denegaciones >= 2) "Ajustes" else "Reintentar")
                         }
                     }
+                }
+
+                // --- Mapa de Google Maps con la ubicación real ---
+                if (draft.latitud != null && draft.longitud != null) {
+                    MapaUbicacion(
+                        latitud = draft.latitud,
+                        longitud = draft.longitud,
+                        titulo = draft.tipo,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                    )
+                }
+
+                // --- Estado de conexión (Wi-Fi / datos móviles) ---
+                val estadoRed by rememberEstadoRed()
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = if (estadoRed.conectado) Icons.Default.Wifi else Icons.Default.WifiOff,
+                        contentDescription = null,
+                        tint = if (estadoRed.conectado) MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        text = if (estadoRed.conectado) "Conectado: ${estadoRed.tipo.etiqueta}"
+                        else "Sin internet (el marcaje se guarda igual en el teléfono)",
+                        fontSize = 13.sp,
+                        color = if (estadoRed.conectado) MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.error
+                    )
                 }
 
                 // --- Foto ---
@@ -246,7 +338,7 @@ fun MarcajeDialog(
                         ruta = draft.fotoPath,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(120.dp),
+                            .height(90.dp),
                         anchoMax = 600
                     )
                 }
