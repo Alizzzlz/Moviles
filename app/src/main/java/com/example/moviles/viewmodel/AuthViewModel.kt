@@ -116,6 +116,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     usuarioEncontrado.password == passwordActual
 
             if (esCredencialCorrecta && usuarioEncontrado != null) {
+                // PERSISTENCIA: Guardar sesión activa en DataStore
+                userPreferences.saveSession(
+                    id = usuarioEncontrado.id,
+                    rol = usuarioEncontrado.rol,
+                    email = usuarioEncontrado.email,
+                    name = usuarioEncontrado.nombres,
+                    rut = usuarioEncontrado.rut
+                )
                 userPreferences.saveAuthToken("token_demo_123", usuarioEncontrado.rut)
                 // Recordar la sesión: la próxima vez la app abre directo en Home
                 userPreferences.saveSession(usuarioEncontrado.id, usuarioEncontrado.rol)
@@ -129,7 +137,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                         errorMessage = null,
                         passwordErrorMessage = null
                     )
-                    // Retorna ID y el Rol del usuario ("OPERARIO" o "ADMIN")
                     onSuccess(usuarioEncontrado.id, usuarioEncontrado.rol)
                 }
             } else {
@@ -201,6 +208,14 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             val usuarioCreado = dao.obtenerUsuarioPorEmail(emailTrimmed)
             val usuarioIdGenerado = usuarioCreado?.id ?: 1
 
+            // PERSISTENCIA: Guardar sesión activa en DataStore al registrarse
+            userPreferences.saveSession(
+                id = usuarioIdGenerado,
+                rol = "OPERARIO",
+                email = emailTrimmed,
+                name = nombresTrimmed,
+                rut = rutTrimmed
+            )
             userPreferences.saveAuthToken("token_demo_123", rutTrimmed)
             userPreferences.saveSession(usuarioIdGenerado, "OPERARIO")
 

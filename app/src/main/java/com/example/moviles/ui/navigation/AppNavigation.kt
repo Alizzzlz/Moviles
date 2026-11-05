@@ -6,12 +6,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
-import com.example.moviles.data.local.AppDatabase
-import com.example.moviles.data.local.datastore.UserPreferences
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,49 +26,32 @@ import com.example.moviles.viewmodel.PerfilViewModel
 
 @Composable
 fun MainNavGraph(navController: NavHostController) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val userPrefs = remember { UserPreferences(context.applicationContext) }
-
-    /** Borra la sesión guardada y vuelve al Login (limpiando todo el historial de pantallas). */
-    val cerrarSesion: () -> Unit = {
-        scope.launch {
-            userPrefs.clearSession()
-            navController.navigate(Screen.Login.route) {
-                popUpTo(0) { inclusive = true }
-            }
-        }
-    }
-
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route
     ) {
         // --- SPLASH ---
         composable(Screen.Splash.route) {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val userPreferences = remember { com.example.moviles.data.local.datastore.UserPreferences(context) }
+            val isLoggedIn by userPreferences.isLoggedIn.collectAsStateWithLifecycle(initialValue = false)
+            val userRole by userPreferences.userRole.collectAsStateWithLifecycle(initialValue = "")
+            val userId by userPreferences.userId.collectAsStateWithLifecycle(initialValue = -1)
+
             SplashView(
                 onFinished = {
-                    scope.launch {
-                        // ¿Hay una sesión guardada? Entonces se salta el Login.
-                        val sesion = userPrefs.getSession()
-                        val usuario = sesion?.let {
-                            AppDatabase.getDatabase(context).usuarioDao()
-                                .obtenerUsuarioPorId(it.first).first()
+                    val destination = if (isLoggedIn && userId != -1) {
+                        if (userRole == "ADMIN") {
+                            Screen.AdminHome.createRoute(userId)
+                        } else {
+                            Screen.Home.createRoute(userId)
                         }
+                    } else {
+                        Screen.Login.route
+                    }
 
-                        val destino = when {
-                            // sesión inexistente o el usuario ya no existe en la base de datos
-                            sesion == null || usuario == null -> {
-                                if (sesion != null) userPrefs.clearSession()
-                                Screen.Login.route
-                            }
-                            usuario.rol == "ADMIN" -> Screen.AdminHome.createRoute(usuario.id)
-                            else -> Screen.Home.createRoute(usuario.id)
-                        }
-
-                        navController.navigate(destino) {
-                            popUpTo(Screen.Splash.route) { inclusive = true }
-                        }
+                    navController.navigate(destination) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
             )
@@ -174,7 +151,11 @@ fun MainNavGraph(navController: NavHostController) {
                 onNavegarANotificaciones = { navController.navigate(Screen.Notifications.route) },
                 onNavegarAEditarPerfil = { navController.navigate(Screen.EditProfile.route) },
                 onNavegarAAjustes = { navController.navigate(Screen.Settings.route) },
-                onCerrarSesion = cerrarSesion
+                onCerrarSesion = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -187,7 +168,11 @@ fun MainNavGraph(navController: NavHostController) {
 
             AdminHomeView(
                 usuarioId = usuarioId,
-                onCerrarSesion = cerrarSesion
+                onCerrarSesion = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -264,5 +249,4 @@ fun MainNavGraph(navController: NavHostController) {
             SettingsView(onVolver = { navController.popBackStack() })
         }
     }
-
 }

@@ -12,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,8 +20,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviles.data.local.database.entity.CupoHoraExtraEntity
 import com.example.moviles.data.local.database.entity.SolicitudHoraExtraEntity
+import com.example.moviles.data.local.datastore.UserPreferences
 import com.example.moviles.data.local.entity.UsuarioEntity
 import com.example.moviles.viewmodel.AdminViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +34,10 @@ fun AdminHomeView(
 ) {
     var tabSeleccionado by remember { mutableIntStateOf(0) }
     var mostrarCrearCupoModal by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val userPreferences = remember { UserPreferences(context) }
+    val scope = rememberCoroutineScope()
 
     val cuposPublicados by adminViewModel.cuposPublicados.collectAsStateWithLifecycle()
     val usuarios by adminViewModel.usuarios.collectAsStateWithLifecycle()
@@ -56,7 +63,14 @@ fun AdminHomeView(
                     }
                 },
                 actions = {
-                    IconButton(onClick = onCerrarSesion) {
+                    IconButton(
+                        onClick = {
+                            scope.launch {
+                                userPreferences.clearSession()
+                                onCerrarSesion()
+                            }
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Cerrar Sesión",
