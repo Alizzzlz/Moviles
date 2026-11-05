@@ -5,9 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.database.entity.CupoHoraExtraEntity
+import com.example.moviles.data.local.database.entity.SolicitudHoraExtraEntity
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 data class CupoHoraExtra(
@@ -27,53 +30,63 @@ data class HoraExtraUiState(
 
 class HoraExtraViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val horaExtraDao = AppDatabase.getDatabase(application).horaExtraDao()
+    private val db = AppDatabase.getDatabase(application)
+    private val horaExtraDao = db.horaExtraDao()
+    private val solicitudDao = db.solicitudHoraExtraDao()
 
     private val _uiState = MutableStateFlow(HoraExtraUiState())
     val uiState: StateFlow<HoraExtraUiState> = _uiState.asStateFlow()
 
-    // Guardamos copias en memoria para actualizar la UI fácilmente
-    private var listaEntitiesGuardada: List<CupoHoraExtraEntity> = emptyList()
-    private val estadosLocales = mutableMapOf<Int, String>()
+    private var cuposPublicados: List<CupoHoraExtraEntity> = emptyList()
 
     init {
-        // Escuchamos la base de datos de Room en tiempo real
+        // Escuchamos en tiempo real los cupos y las solicitudes registradas en Room
         viewModelScope.launch {
-            horaExtraDao.obtenerTodosLosCupos().collect { entidades ->
-                listaEntitiesGuardada = entidades
-                actualizarEstadoUi()
+            combine(
+                horaExtraDao.obtenerTodosLosCupos(),
+                solicitudDao.obtenerTodasLasSolicitudes()
+            ) { cupos, solicitudes ->
+                cuposPublicados = cupos
+                val solicitudesMapa = solicitudes.associateBy { it.cupoId }
+
+                cupos.map { entity ->
+                    val estadoActual = solicitudesMapa[entity.id]?.estado ?: "Disponible"
+                    CupoHoraExtra(
+                        id = entity.id,
+                        fecha = entity.fecha,
+                        horario = "${entity.horas} hrs extras disponibles",
+                        horas = entity.horas,
+                        motivo = entity.tarea,
+                        estado = estadoActual
+                    )
+                }
+            }.collect { listaUi ->
+                _uiState.value = _uiState.value.copy(cuposDisponibles = listaUi)
             }
         }
     }
 
-    private fun actualizarEstadoUi(mensaje: String? = _uiState.value.mensaje) {
-        val listaUi = listaEntitiesGuardada.map { entity ->
-            val estadoActual = estadosLocales[entity.id] ?: "Disponible"
-            CupoHoraExtra(
-                id = entity.id,
-                fecha = entity.fecha,
-                horario = "${entity.horas} hrs extras disponibles",
-                horas = entity.horas,
-                motivo = entity.tarea,
-                estado = estadoActual
-            )
-        }
-
-        _uiState.value = HoraExtraUiState(
-            horasAprobadasMes = 12,
-            cuposDisponibles = listaUi,
-            mensaje = mensaje
-        )
-    }
-
     fun solicitarCupo(cupoId: Int) {
-        estadosLocales[cupoId] = "Pendiente"
-        actualizarEstadoUi(mensaje = "Solicitud enviada a revisión por el Jefe de Obra.")
+        val cupo = cuposPublicados.find { it.id == cupoId } ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            val nuevaSolicitud = SolicitudHoraExtraEntity(
+                cupoId = cupo.id,
+                trabajadorNombre = "Vania Valdés",
+                tarea = cupo.tarea,
+                horas = cupo.horas,
+                fecha = cupo.fecha,
+                estado = "Pendiente"
+            )
+            solicitudDao.insertarSolicitud(nuevaSolicitud)
+        }
+        _uiState.value = _uiState.value.copy(mensaje = "Solicitud enviada a revisión por el Jefe de Obra.")
     }
 
     fun cancelarSolicitud(cupoId: Int) {
-        estadosLocales[cupoId] = "Disponible"
-        actualizarEstadoUi(mensaje = "Solicitud cancelada.")
+        viewModelScope.launch(Dispatchers.IO) {
+            solicitudDao.eliminarPorCupoId(cupoId)
+        }
+        _uiState.value = _uiState.value.copy(mensaje = "Solicitud cancelada.")
     }
 
     fun mensajeConsumido() {

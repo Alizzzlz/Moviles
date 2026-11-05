@@ -10,8 +10,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.HourglassTop
+import androidx.compose.material.icons.filled.MoreTime
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,12 +25,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviles.ui.viewmodel.AsistenciaViewModel
 import com.example.moviles.viewmodel.CupoHoraExtra
 import com.example.moviles.viewmodel.HoraExtraViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun HoraExtraView(
     viewModel: HoraExtraViewModel = viewModel(),
+    asistenciaViewModel: AsistenciaViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -112,7 +120,7 @@ fun HoraExtraView(
                     Text(
                         text = "No hay cupos de horas extras habilitados por el momento.",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.secondary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             } else {
@@ -120,7 +128,8 @@ fun HoraExtraView(
                     TarjetaCupoHoraExtra(
                         cupo = cupo,
                         onSolicitar = { viewModel.solicitarCupo(cupo.id) },
-                        onCancelar = { viewModel.cancelarSolicitud(cupo.id) }
+                        onCancelar = { viewModel.cancelarSolicitud(cupo.id) },
+                        onIniciarMarcajeHE = { tipo -> asistenciaViewModel.iniciarMarcaje(tipo) }
                     )
                 }
             }
@@ -137,8 +146,18 @@ fun HoraExtraView(
 private fun TarjetaCupoHoraExtra(
     cupo: CupoHoraExtra,
     onSolicitar: () -> Unit,
-    onCancelar: () -> Unit
+    onCancelar: () -> Unit,
+    onIniciarMarcajeHE: (String) -> Unit
 ) {
+    var estadoMarcajeHE by remember { mutableIntStateOf(0) }
+    var horaRegistroEntrada by remember { mutableStateOf<String?>(null) }
+    var horaRegistroSalida by remember { mutableStateOf<String?>(null) }
+
+    fun obtenerFechaHoraActual(): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy - HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date())
+    }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -162,19 +181,20 @@ private fun TarjetaCupoHoraExtra(
                     Text(
                         text = cupo.fecha,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
+                        fontSize = 15.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Surface(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
                         text = "+${cupo.horas} hrs",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -185,7 +205,7 @@ private fun TarjetaCupoHoraExtra(
             Text(
                 text = "Horario: ${cupo.horario}",
                 fontSize = 13.sp,
-                color = MaterialTheme.colorScheme.secondary
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = "Tarea: ${cupo.motivo}",
@@ -194,40 +214,128 @@ private fun TarjetaCupoHoraExtra(
                 color = MaterialTheme.colorScheme.onSurface
             )
 
+            // --- DETALLE DE FECHA Y HORA DE MARCAJE REGISTRADOS ---
+            if (horaRegistroEntrada != null) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.secondaryContainer,
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(10.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Entrada H.E.: ${horaRegistroEntrada}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer
+                            )
+                        }
+
+                        horaRegistroSalida?.let { salida ->
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Salida H.E.: $salida",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(14.dp))
 
             when (cupo.estado) {
                 "Pendiente" -> OutlinedButton(
                     onClick = onCancelar,
                     colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = MaterialTheme.colorScheme.tertiary
+                        contentColor = MaterialTheme.colorScheme.error
                     ),
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
                 ) {
                     Icon(Icons.Default.HourglassTop, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("PENDIENTE DE APROBACIÓN (CANCELAR)")
+                    Text("PENDIENTE (CANCELAR)")
                 }
 
-                "Aprobada" -> Button(
-                    onClick = { },
-                    enabled = false,
-                    colors = ButtonDefaults.buttonColors(
-                        disabledContainerColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("CUPO APROBADO")
+                "Aprobada" -> {
+                    when (estadoMarcajeHE) {
+                        0 -> Button(
+                            onClick = {
+                                horaRegistroEntrada = obtenerFechaHoraActual()
+                                onIniciarMarcajeHE("Entrada H.E. (${cupo.motivo}) - $horaRegistroEntrada")
+                                estadoMarcajeHE = 1
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            Icon(Icons.Default.MoreTime, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("MARCAR ENTRADA H.E.", fontWeight = FontWeight.Bold)
+                        }
+
+                        1 -> Button(
+                            onClick = {
+                                horaRegistroSalida = obtenerFechaHoraActual()
+                                onIniciarMarcajeHE("Salida H.E. (${cupo.motivo}) - $horaRegistroSalida")
+                                estadoMarcajeHE = 2
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
+                            )
+                        ) {
+                            Icon(Icons.Default.ExitToApp, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("MARCAR SALIDA H.E.", fontWeight = FontWeight.Bold)
+                        }
+
+                        else -> OutlinedButton(
+                            onClick = { },
+                            enabled = false,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Icon(Icons.Default.TaskAlt, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("HORA EXTRA COMPLETADA", fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
 
                 else -> Button(
                     onClick = onSolicitar,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
                     Text("POSTULAR A HORAS EXTRAS", fontWeight = FontWeight.Bold)
                 }
