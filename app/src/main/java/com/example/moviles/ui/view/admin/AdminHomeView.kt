@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviles.data.local.database.entity.CupoHoraExtraEntity
+import com.example.moviles.data.local.database.entity.SolicitudHoraExtraEntity
 import com.example.moviles.data.local.entity.UsuarioEntity
 import com.example.moviles.viewmodel.AdminViewModel
 
@@ -28,11 +29,12 @@ fun AdminHomeView(
     adminViewModel: AdminViewModel = viewModel(),
     onCerrarSesion: () -> Unit = {}
 ) {
-    var tabSeleccionado by remember { mutableStateOf(0) }
+    var tabSeleccionado by remember { mutableIntStateOf(0) }
     var mostrarCrearCupoModal by remember { mutableStateOf(false) }
 
     val cuposPublicados by adminViewModel.cuposPublicados.collectAsStateWithLifecycle()
     val usuarios by adminViewModel.usuarios.collectAsStateWithLifecycle()
+    val solicitudes by adminViewModel.solicitudesHE.collectAsStateWithLifecycle()
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -84,8 +86,8 @@ fun AdminHomeView(
                 NavigationBarItem(
                     selected = tabSeleccionado == 0,
                     onClick = { tabSeleccionado = 0 },
-                    icon = { Icon(Icons.Default.HourglassTop, contentDescription = null) },
-                    label = { Text("Cupos") },
+                    icon = { Icon(Icons.Default.AddCircleOutline, contentDescription = null) },
+                    label = { Text("Crear Cupo") },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary,
@@ -94,9 +96,24 @@ fun AdminHomeView(
                         unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
+
                 NavigationBarItem(
                     selected = tabSeleccionado == 1,
                     onClick = { tabSeleccionado = 1 },
+                    icon = { Icon(Icons.Default.MoreTime, contentDescription = null) },
+                    label = { Text("Gestión H.E.") },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.primary,
+                        selectedTextColor = MaterialTheme.colorScheme.primary,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                )
+
+                NavigationBarItem(
+                    selected = tabSeleccionado == 2,
+                    onClick = { tabSeleccionado = 2 },
                     icon = { Icon(Icons.Default.Group, contentDescription = null) },
                     label = { Text("Usuarios") },
                     colors = NavigationBarItemDefaults.colors(
@@ -121,7 +138,14 @@ fun AdminHomeView(
                     cupos = cuposPublicados,
                     onDeleteCupo = { id -> adminViewModel.eliminarCupo(id) }
                 )
-                1 -> AdminUsuariosContent(
+
+                1 -> AdminGestionHEContent(
+                    solicitudes = solicitudes,
+                    onAprobar = { cupoId -> adminViewModel.aprobarSolicitud(cupoId) },
+                    onRechazar = { cupoId -> adminViewModel.rechazarSolicitud(cupoId) }
+                )
+
+                2 -> AdminUsuariosContent(
                     usuarios = usuarios,
                     onDeleteUser = { id -> adminViewModel.eliminarUsuario(id) }
                 )
@@ -206,6 +230,135 @@ fun AdminCuposContent(
                                 contentDescription = "Eliminar Cupo",
                                 tint = MaterialTheme.colorScheme.error
                             )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AdminGestionHEContent(
+    solicitudes: List<SolicitudHoraExtraEntity>,
+    onAprobar: (Int) -> Unit,
+    onRechazar: (Int) -> Unit
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        item {
+            Text(
+                text = "Solicitudes y Marcajes H.E.",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        if (solicitudes.isEmpty()) {
+            item {
+                Text(
+                    text = "No hay solicitudes de horas extras registradas por el momento.",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        } else {
+            items(solicitudes, key = { it.id }) { item ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Trabajador: ${item.trabajadorNombre}",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Surface(
+                                color = when (item.estado) {
+                                    "Aprobada" -> MaterialTheme.colorScheme.primaryContainer
+                                    "Rechazada" -> MaterialTheme.colorScheme.errorContainer
+                                    else -> MaterialTheme.colorScheme.surfaceVariant
+                                },
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = item.estado.uppercase(),
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = when (item.estado) {
+                                        "Aprobada" -> MaterialTheme.colorScheme.onPrimaryContainer
+                                        "Rechazada" -> MaterialTheme.colorScheme.onErrorContainer
+                                        else -> MaterialTheme.colorScheme.onSurfaceVariant
+                                    },
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Tarea: ${item.tarea} (${item.horas} hrs)",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "Fecha: ${item.fecha}",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+
+                        item.marcajeEntrada?.let { entrada ->
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Surface(
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                shape = RoundedCornerShape(6.dp)
+                            ) {
+                                Text(
+                                    text = "Marcaje Entrada: $entrada",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        if (item.estado == "Pendiente") {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Button(
+                                    onClick = { onAprobar(item.cupoId) },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp)
+                                ) {
+                                    Text("Aprobar")
+                                }
+                                OutlinedButton(
+                                    onClick = { onRechazar(item.cupoId) },
+                                    modifier = Modifier.weight(1f),
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    )
+                                ) {
+                                    Text("Rechazar")
+                                }
+                            }
                         }
                     }
                 }

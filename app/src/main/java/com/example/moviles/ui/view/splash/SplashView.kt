@@ -68,7 +68,7 @@ fun SplashView(
     val fondoRadial = Brush.radialGradient(
         colors = listOf(
             MaterialTheme.colorScheme.background,
-            MaterialTheme.colorScheme.primary.copy(alpha = 0.90f) // Subimos un poco el alpha a 0.90f para mayor intensidad
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.90f)
         ),
         radius = 3200f
     )
@@ -93,7 +93,7 @@ fun SplashView(
                 contentDescription = "Logo MARK",
                 modifier = Modifier
                     .size(200.dp)
-                    .graphicsLayer { rotationZ = rotation.value }
+
             )
 
             Spacer(modifier = Modifier.height(14.dp))
