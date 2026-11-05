@@ -1,3 +1,6 @@
+import java.util.Properties
+import kotlin.apply
+
 plugins {
     alias(libs.plugins.android.application)
     // Asegúrate de que el plugin de Kotlin esté declarado correctamente en tu libs.versions.toml
@@ -10,11 +13,17 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+// Lee la API Key de Google Maps desde local.properties (archivo que NO se sube a Git)
+val localProps = Properties().apply {
+    val archivo = rootProject.file("local.properties")
+    if (archivo.exists()) archivo.inputStream().use { load(it) }
+}
+
 android {
     namespace = "com.example.moviles"
 
     // Cambia compileSdk a la sintaxis estándar para evitar incompatibilidad con KSP
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.markalnan.example.moviles"
@@ -22,6 +31,9 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // Se inyecta en AndroidManifest.xml como ${MAPS_API_KEY}
+        manifestPlaceholders["MAPS_API_KEY"] = localProps.getProperty("MAPS_API_KEY", "")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -78,5 +90,8 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     // Google Play Services: Location
     implementation("com.google.android.gms:play-services-location:21.4.0")
+    // Google Maps (mapa real + versión para Jetpack Compose)
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+    implementation("com.google.maps.android:maps-compose:8.2.2")
 
 }

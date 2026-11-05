@@ -17,6 +17,9 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,6 +29,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviles.data.local.database.entity.AsistenciaEntity
+import com.example.moviles.ui.componentes.EstadoRedBanner
+import com.example.moviles.ui.componentes.MapaUbicacion
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -51,6 +56,7 @@ fun formatearFecha(fechaIso: String): String {
 @Composable
 fun ItemMarcajeCard(registro: AsistenciaEntity) {
     val context = LocalContext.current
+    var mostrarMapa by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -88,15 +94,7 @@ fun ItemMarcajeCard(registro: AsistenciaEntity) {
                 )
                 if (registro.latitud != null && registro.longitud != null) {
                     TextButton(
-                        onClick = {
-                            // Intent: abre la app de mapas del teléfono en esa ubicación
-                            val uri = Uri.parse("geo:${registro.latitud},${registro.longitud}?q=${registro.latitud},${registro.longitud}(${registro.tipo})")
-                            try {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                            } catch (e: ActivityNotFoundException) {
-                                Toast.makeText(context, "No hay app de mapas instalada", Toast.LENGTH_SHORT).show()
-                            }
-                        },
+                        onClick = { mostrarMapa = true },
                         contentPadding = PaddingValues(0.dp)
                     ) {
                         Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -113,6 +111,41 @@ fun ItemMarcajeCard(registro: AsistenciaEntity) {
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
+    }
+
+    if (mostrarMapa && registro.latitud != null && registro.longitud != null) {
+        AlertDialog(
+            onDismissRequest = { mostrarMapa = false },
+            title = {
+                Text("${registro.tipo} - ${formatearFecha(registro.fecha)} ${registro.horaMarcaje.take(5)}",
+                    fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            },
+            text = {
+                MapaUbicacion(
+                    latitud = registro.latitud,
+                    longitud = registro.longitud,
+                    titulo = registro.tipo,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp),
+                    mostrarPuntoAzul = false
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { mostrarMapa = false }) { Text("Cerrar") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    // Opcional: abrir también en la app Google Maps
+                    val uri = Uri.parse("geo:${registro.latitud},${registro.longitud}?q=${registro.latitud},${registro.longitud}(${registro.tipo})")
+                    try {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    } catch (e: ActivityNotFoundException) {
+                        Toast.makeText(context, "No hay app de mapas instalada", Toast.LENGTH_SHORT).show()
+                    }
+                }) { Text("Abrir en Maps") }
+            }
+        )
     }
 }
 
@@ -171,9 +204,12 @@ fun HistorialView(
             )
         }
     ) { paddingValues ->
-        HistorialContent(
-            historial = state.historial,
-            modifier = Modifier.padding(paddingValues)
-        )
+        Column(modifier = Modifier.padding(paddingValues)) {
+            EstadoRedBanner()
+            HistorialContent(
+                historial = state.historial,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }

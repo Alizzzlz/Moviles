@@ -125,6 +125,8 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     rut = usuarioEncontrado.rut
                 )
                 userPreferences.saveAuthToken("token_demo_123", usuarioEncontrado.rut)
+                // Recordar la sesión: la próxima vez la app abre directo en Home
+                userPreferences.saveSession(usuarioEncontrado.id, usuarioEncontrado.rol)
 
                 withContext(Dispatchers.Main) {
                     _uiState.value = _uiState.value.copy(
@@ -215,6 +217,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 rut = rutTrimmed
             )
             userPreferences.saveAuthToken("token_demo_123", rutTrimmed)
+            userPreferences.saveSession(usuarioIdGenerado, "OPERARIO")
 
             withContext(Dispatchers.Main) {
                 _uiState.value = _uiState.value.copy(
