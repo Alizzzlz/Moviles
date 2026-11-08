@@ -48,9 +48,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.unit.sp
+import com.example.moviles.model.MarcajeDraft
 import com.example.moviles.ui.componentes.MapaUbicacion
 import com.example.moviles.ui.componentes.rememberEstadoRed
-import com.example.moviles.ui.viewmodel.MarcajeDraft
 import com.example.moviles.util.CameraHelper
 import com.example.moviles.util.LocationHelper
 import kotlinx.coroutines.withTimeoutOrNull

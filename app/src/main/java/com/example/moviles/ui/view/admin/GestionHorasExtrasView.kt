@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviles.model.CupoHoraExtra
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
-import com.example.moviles.viewmodel.CupoHoraExtra
 import com.example.moviles.viewmodel.HoraExtraViewModel
 
 @Composable

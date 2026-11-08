@@ -34,9 +34,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.moviles.data.local.datastore.UserPreferences
+import com.example.moviles.model.AsistenciaUiState
 import com.example.moviles.ui.theme.MarkTheme
 import com.example.moviles.ui.view.profile.ProfileView
-import com.example.moviles.ui.viewmodel.AsistenciaUiState
 import com.example.moviles.ui.viewmodel.AsistenciaViewModel
 import com.example.moviles.viewmodel.PerfilViewModel
 import kotlinx.coroutines.delay
