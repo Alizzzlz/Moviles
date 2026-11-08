@@ -6,7 +6,7 @@ object Validadores {
     private val REGEX_EMAIL = Regex("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     private val REGEX_NOMBRE = Regex("^[\\p{L}][\\p{L} .'-]*$")
 
-    // ---------- RUT chileno (algoritmo módulo 11) ----------
+    // ---------- RUT chileno
     fun esRutValido(rut: String): Boolean {
         val limpio = rut.replace(".", "").replace("-", "").trim().uppercase()
         if (limpio.length !in 8..9) return false
@@ -21,7 +21,7 @@ object Validadores {
             multiplicador = if (multiplicador == 7) 2 else multiplicador + 1
         }
 
-        // Línea corregida: Se agregó el operador de resta '-'
+
         val resto = 11 - (suma % 11)
         val esperado = when (resto) {
             11 -> '0'

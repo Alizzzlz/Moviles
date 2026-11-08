@@ -27,8 +27,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate // 👈 IMPORTANTE: Agregado para rotar
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -73,7 +73,6 @@ fun SplashView(
         radius = 3200f
     )
 
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -93,7 +92,7 @@ fun SplashView(
                 contentDescription = "Logo MARK",
                 modifier = Modifier
                     .size(200.dp)
-
+                    .rotate(rotation.value) // 👈 ¡AQUÍ ESTABA EL DETALLE! Ahora sí aplica el giro
             )
 
             Spacer(modifier = Modifier.height(14.dp))
@@ -134,21 +133,5 @@ fun SplashView(
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 16.dp)
         )
-    }
-}
-
-@Preview(showBackground = true, name = "Modo Claro")
-@Composable
-private fun SplashViewLightPreview() {
-    MarkTheme(darkTheme = false) {
-        SplashView()
-    }
-}
-
-@Preview(showBackground = true, name = "Modo Oscuro")
-@Composable
-private fun SplashViewDarkPreview() {
-    MarkTheme(darkTheme = true) {
-        SplashView()
     }
 }

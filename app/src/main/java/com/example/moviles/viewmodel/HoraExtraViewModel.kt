@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.database.entity.CupoHoraExtraEntity
 import com.example.moviles.data.local.database.entity.SolicitudHoraExtraEntity
+import com.example.moviles.model.CupoHoraExtra
+import com.example.moviles.model.HoraExtraUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,20 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
-data class CupoHoraExtra(
-    val id: Int,
-    val fecha: String,
-    val horario: String,
-    val horas: Int,
-    val motivo: String,
-    val estado: String
-)
 
-data class HoraExtraUiState(
-    val horasAprobadasMes: Int = 12,
-    val cuposDisponibles: List<CupoHoraExtra> = emptyList(),
-    val mensaje: String? = null
-)
 
 class HoraExtraViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -35,12 +24,12 @@ class HoraExtraViewModel(application: Application) : AndroidViewModel(applicatio
     private val solicitudDao = db.solicitudHoraExtraDao()
 
     private val _uiState = MutableStateFlow(HoraExtraUiState())
-    val uiState: StateFlow<HoraExtraUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<HoraExtraUiState> =_uiState.asStateFlow()
 
     private var cuposPublicados: List<CupoHoraExtraEntity> = emptyList()
 
     init {
-        // Escuchamos en tiempo real los cupos y las solicitudes registradas en Room
+
         viewModelScope.launch {
             combine(
                 horaExtraDao.obtenerTodosLosCupos(),

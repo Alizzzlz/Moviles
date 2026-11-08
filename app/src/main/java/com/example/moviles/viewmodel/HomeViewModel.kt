@@ -17,7 +17,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val usuarioDao = AppDatabase.getDatabase(application).usuarioDao()
 
-    // ID del usuario actualmente autenticado
     private val _usuarioId = MutableStateFlow<Int?>(null)
 
     @OptIn(ExperimentalCoroutinesApi::class)

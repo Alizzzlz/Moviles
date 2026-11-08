@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.datastore.UserPreferences
+import com.example.moviles.model.PerfilUiState
 import com.example.moviles.util.Validadores
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,18 +19,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class PerfilUiState(
-    val cargado: Boolean = false,
-    val nombre: String = "",
-    val rut: String = "",
-    val email: String = "",
-    val telefono: String = "",
-    val fotoUri: String? = null,
-    val cargo: String = "Maestro Mayor",
-    val obra: String = "Obra Central",
-    val horasMes: String = "14.5 hrs",
-    val temaOscuro: Boolean? = null
-)
+
 
 class PerfilViewModel(application: Application) : AndroidViewModel(application) {
 

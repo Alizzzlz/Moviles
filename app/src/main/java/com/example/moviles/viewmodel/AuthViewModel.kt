@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.moviles.data.local.AppDatabase
 import com.example.moviles.data.local.datastore.UserPreferences
 import com.example.moviles.data.local.entity.UsuarioEntity
+import com.example.moviles.model.AuthUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -13,18 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-data class AuthUiState(
-    val email: String = "",
-    val password: String = "",
-    val rut: String = "",
-    val isRutValid: Boolean = true,
-    val isEmailValid: Boolean = true,
-    val isPasswordValid: Boolean = true,
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val passwordErrorMessage: String? = null,
-    val isAuthenticated: Boolean = false
-)
+
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -125,7 +115,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     rut = usuarioEncontrado.rut
                 )
                 userPreferences.saveAuthToken("token_demo_123", usuarioEncontrado.rut)
-                // Recordar la sesión: la próxima vez la app abre directo en Home
+
                 userPreferences.saveSession(usuarioEncontrado.id, usuarioEncontrado.rol)
 
                 withContext(Dispatchers.Main) {
@@ -208,7 +198,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             val usuarioCreado = dao.obtenerUsuarioPorEmail(emailTrimmed)
             val usuarioIdGenerado = usuarioCreado?.id ?: 1
 
-            // PERSISTENCIA: Guardar sesión activa en DataStore al registrarse
             userPreferences.saveSession(
                 id = usuarioIdGenerado,
                 rol = "OPERARIO",
